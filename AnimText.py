@@ -2,15 +2,9 @@
 # meta
 
 import asyncio
-import random
-import os
-import time
 from datetime import datetime, timedelta
-from telethon.tl.functions.users import GetFullUserRequest
-from telethon.tl.types import Message
 from .. import loader, utils
 import logging
-
 
 log = logging.getLogger(__name__)
 
@@ -23,6 +17,10 @@ class AnimatedTypingMod(loader.Module):
         "loaded": "Модуль <bold>Animated Typing</bold> был успешно загружен!",
         "updated": "Модуль <bold>Animated Typing</bold> был успешно обновлен!",
         "spam_usage": "Используйте: .sp <текст> <количество> <задержка>",
+        "no_text": "<b>Укажите текст для печатания!</b>",
+        "no_cursor": "<b>Укажите новый символ курсора!</b>",
+        "no_delay": "<b>Укажите задержку!</b>",
+        "invalid_delay": "<b>Задержка должна быть числом!</b>",
     }
 
     def __init__(self):
@@ -30,13 +28,12 @@ class AnimatedTypingMod(loader.Module):
         self._me = None
         self.__author__ = "@MartyyyK"
         self.__version__ = "1.0.0"
-        self.commands = ["p", "c", "s", "configp", "sp", "spam"]
+        self.commands = ["p", "c", "s", "configp", "sp"]
         self.typing_delay = 0.08
         self.typing_cursor = "▮"
 
     async def client_ready(self, client, db):
         self._me = await client.get_me()
-
         try:
             cursor = self.get("typing_cursor", default="█")
             if cursor is not None:
@@ -48,15 +45,12 @@ class AnimatedTypingMod(loader.Module):
         except Exception as e:
             log.error(f"Ошибка при загрузке настроек: {e}")
 
-    @loader.command(
-        ru_doc="Анимированный эффект печатания.",
-        eng_doc="Animated typing effect."
-    )
     async def p(self, message):
         try:
             text = utils.get_args_raw(message)
             if not text:
-                return await utils.answer(message, "<b>Укажите текст для печатания!</b>", parse_mode="html")
+                return await utils.answer(message, self.strings["no_text"])
+            
             await message.edit(self.typing_cursor)
             typed_text = ""
             for char in text:
@@ -67,109 +61,118 @@ class AnimatedTypingMod(loader.Module):
             await message.edit(typed_text)
 
         except Exception as e:
-             await utils.answer(message, self.strings["error"])
-             log.error(str(e))
+            await utils.answer(message, self.strings["error"])
+            log.error(str(e), exc_info=True)
 
-    @loader.command(
-        ru_doc="Изменяет символ курсора.",
-        eng_doc="Changes the cursor symbol."
-    )
     async def c(self, message):
         try:
             new_cursor = utils.get_args_raw(message)
             if not new_cursor:
-                return await utils.answer(message, "<b>Укажите новый символ курсора!</b>", parse_mode="html")
+                return await utils.answer(message, self.strings["no_cursor"])
+            
             self.typing_cursor = new_cursor
             self.async_set("typing_cursor", self.typing_cursor)
-            await utils.answer(message, f"<b>Курсор изменен на</b> {self.typing_cursor}", parse_mode="html")
+            await utils.answer(message, f"<b>Курсор изменен на</b> {self.typing_cursor}")
+
         except Exception as e:
             await utils.answer(message, self.strings["error"])
-            log.error(str(e))
+            log.error(str(e), exc_info=True)
 
-    @loader.command(
-        ru_doc="Изменяет задержку печатания.",
-        eng_doc="Changes the typing delay."
-    )
     async def s(self, message):
         try:
-             new_delay = utils.get_args_raw(message)
-             if not new_delay:
-                  return await utils.answer(message, "<b>Укажите задержку</b>", parse_mode="html")
-             try:
-                  new_delay = float(new_delay)
-             except ValueError:
-                  return await utils.answer(message, "<b>Задержка должна быть числом</b>", parse_mode="html")
-             self.typing_delay = new_delay
-             self.async_set("typing_delay", self.typing_delay)
-             await utils.answer(message, f"<b>Задержка изменена на</b> {self.typing_delay}", parse_mode="html")
+            new_delay = utils.get_args_raw(message)
+            if not new_delay:
+                return await utils.answer(message, self.strings["no_delay"])
+            
+            try:
+                new_delay = float(new_delay)
+            except ValueError:
+                return await utils.answer(message, self.strings["invalid_delay"])
+            
+            self.typing_delay = new_delay
+            self.async_set("typing_delay", self.typing_delay)
+            await utils.answer(message, f"<b>Задержка изменена на</b> {self.typing_delay}")
 
         except Exception as e:
-             await utils.answer(message, self.strings["error"])
-             log.error(str(e))
+            await utils.answer(message, self.strings["error"])
+            log.error(str(e), exc_info=True)
 
-    @loader.command(
-        ru_doc="Показывает текущие настройки и время по МСК.",
-        eng_doc="Shows current settings and time in Moscow"
-    )
     async def configp(self, message):
         try:
             utc_time = datetime.utcnow()
             moscow_timezone = timedelta(hours=3)
             moscow_time = utc_time + moscow_timezone
             formatted_moscow_time = moscow_time.strftime("%H:%M:%S %d.%m.%Y")
+            
             config_text = (
                 "<b>Текущие настройки:</b>\n"
                 f"<b>Курсор:</b> {self.typing_cursor}\n"
                 f"<b>Задержка:</b> <code>{self.typing_delay}</code>\n"
                 f"<b>Время по Москве:</b> {formatted_moscow_time}\n\n"
-                f"<b><code>.configp</code> Вся информация\n<code>.p</code> Анимированный эффект печатания\n<code>.s</code> Изменяет тайминг\n<code>.c</code> Изменяет курсор\n\n</b>"
-                f"<b>Создатель модуля @MartyyyK</b>"
+                f"<b>Команды:</b>\n"
+                f"<code>.configp</code> - Показать настройки\n"
+                f"<code>.p</code> - Анимированный ввод текста\n"
+                f"<code>.s</code> - Изменить задержку\n"
+                f"<code>.c</code> - Изменить курсор\n"
+                f"<code>.sp</code> - Спам (текст кол-во задержка)\n\n"
+                f"<b>Автор:</b> @MartyyyK\n"
+                f"<b>Версия:</b> {self.__version__}"
             )
-            await utils.answer(message, config_text, parse_mode="html")
+            
+            await utils.answer(message, config_text)
+
         except Exception as e:
             await utils.answer(message, self.strings["error"])
-            log.error(str(e))
+            log.error(str(e), exc_info=True)
 
-    @loader.command(
-        ru_doc="Спам сообщениями. Использование: .sp <текст> <количество> <задержка>",
-        eng_doc="Spam messages. Usage: .sp <text> <amount> <delay>"
-    )
     async def sp(self, message):
-        args = utils.get_args_raw(message).split(" ")
-        if len(args) < 2:
-            return await utils.answer(message, self.strings["spam_usage"])
-        
         try:
-            if len(args) >= 3:
-                text_parts = []
-                count_pos = -2
-                delay_pos = -1
-
-                for i, arg in enumerate(args):
-                    if arg.isdigit() and count_pos == -2:
-                        count_pos = i
-                    elif (arg.replace('.', '').isdigit() or arg.isdigit()) and delay_pos == -1 and i > count_pos:
-                        delay_pos = i
-                
-                if count_pos == -2:
-                    return await utils.answer(message, self.strings["spam_usage"])
-                
-                text = " ".join(args[:count_pos])
-                count = int(args[count_pos])
-                delay = float(args[delay_pos]) if delay_pos != -1 else 0.5
-            else:
-                text = args[0]
-                count = int(args[1])
-                delay = 0.5
+            args = utils.get_args_raw(message)
+            if not args:
+                return await utils.answer(message, self.strings["spam_usage"])
+            
+            parts = []
+            current = []
+            in_quotes = False
+            
+            for char in args:
+                if char == '"':
+                    in_quotes = not in_quotes
+                elif char == ' ' and not in_quotes:
+                    if current:
+                        parts.append(''.join(current))
+                        current = []
+                else:
+                    current.append(char)
+            
+            if current:
+                parts.append(''.join(current))
+            
+            if len(parts) < 2:
+                return await utils.answer(message, self.strings["spam_usage"])
+            
+            text = parts[0]
+            count = 1
+            delay = 0.5
+            
+            try:
+                if len(parts) > 1:
+                    count = int(parts[1])
+                if len(parts) > 2:
+                    delay = float(parts[2])
+            except ValueError:
+                return await utils.answer(message, self.strings["invalid_delay"])
             
             await message.delete()
+            
             for _ in range(count):
                 await message.respond(text)
                 if delay > 0:
                     await asyncio.sleep(delay)
+                    
         except Exception as e:
             await utils.answer(message, self.strings["error"])
-            log.error(str(e))
+            log.error(str(e), exc_info=True)
 
     def async_set(self, key, value):
-         self.set(key, value)
+        self.set(key, value)
