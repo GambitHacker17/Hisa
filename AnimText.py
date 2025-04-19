@@ -22,6 +22,7 @@ class AnimatedTypingMod(loader.Module):
         "error": "<b>Произошла ошибка во время выполнения команды.</b>",
         "loaded": "Модуль <bold>Animated Typing</bold> был успешно загружен!",
         "updated": "Модуль <bold>Animated Typing</bold> был успешно обновлен!",
+        "spam_usage": "Используйте: .sp <текст> <количество> <задержка>",
     }
 
     def __init__(self):
@@ -29,10 +30,9 @@ class AnimatedTypingMod(loader.Module):
         self._me = None
         self.__author__ = "@MartyyyK"
         self.__version__ = "1.0.0"
-        self.commands = ["p", "c", "s", "configp"]
+        self.commands = ["p", "c", "s", "configp", "sp", "spam"]
         self.typing_delay = 0.08
         self.typing_cursor = "▮"
-
 
     async def client_ready(self, client, db):
         self._me = await client.get_me()
@@ -47,7 +47,6 @@ class AnimatedTypingMod(loader.Module):
                 self.typing_delay = float(delay)
         except Exception as e:
             log.error(f"Ошибка при загрузке настроек: {e}")
-
 
     @loader.command(
         ru_doc="Анимированный эффект печатания.",
@@ -108,9 +107,6 @@ class AnimatedTypingMod(loader.Module):
              await utils.answer(message, self.strings["error"])
              log.error(str(e))
 
-    def async_set(self, key, value):  
-        self.set(key, value)
-
     @loader.command(
         ru_doc="Показывает текущие настройки и время по МСК.",
         eng_doc="Shows current settings and time in Moscow"
@@ -128,10 +124,49 @@ class AnimatedTypingMod(loader.Module):
                 f"<b>Время по Москве:</b> {formatted_moscow_time}\n\n"
                 f"<b><code>.configp</code> Вся информация\n<code>.p</code> Анимированный эффект печатания\n<code>.s</code> Изменяет тайминг\n<code>.c</code> Изменяет курсор\n\n</b>"
                 f"<b>Создатель модуля @MartyyyK</b>"
-
             )
-
             await utils.answer(message, config_text, parse_mode="html")
+        except Exception as e:
+            await utils.answer(message, self.strings["error"])
+            log.error(str(e))
+
+    @loader.command(
+        ru_doc="Спам сообщениями. Использование: .sp <текст> <количество> <задержка>",
+        eng_doc="Spam messages. Usage: .sp <text> <amount> <delay>"
+    )
+    async def sp(self, message):
+        args = utils.get_args_raw(message).split(" ")
+        if len(args) < 2:
+            return await utils.answer(message, self.strings["spam_usage"])
+        
+        try:
+            if len(args) >= 3:
+                text_parts = []
+                count_pos = -2
+                delay_pos = -1
+
+                for i, arg in enumerate(args):
+                    if arg.isdigit() and count_pos == -2:
+                        count_pos = i
+                    elif (arg.replace('.', '').isdigit() or arg.isdigit()) and delay_pos == -1 and i > count_pos:
+                        delay_pos = i
+                
+                if count_pos == -2:
+                    return await utils.answer(message, self.strings["spam_usage"])
+                
+                text = " ".join(args[:count_pos])
+                count = int(args[count_pos])
+                delay = float(args[delay_pos]) if delay_pos != -1 else 0.5
+            else:
+                text = args[0]
+                count = int(args[1])
+                delay = 0.5
+            
+            await message.delete()
+            for _ in range(count):
+                await message.respond(text)
+                if delay > 0:
+                    await asyncio.sleep(delay)
         except Exception as e:
             await utils.answer(message, self.strings["error"])
             log.error(str(e))
