@@ -1,4 +1,4 @@
-__version__ = (1, 0, 0)
+__version__ = (1, 1, 0)  # Обновленная версия
 
 import contextlib
 import io
@@ -429,10 +429,22 @@ class NekoSpy(loader.Module):
             ]
 
     def _should_track_pm(self, user_id: int) -> bool:
+        cached_msg = self._cache.get(user_id)
         return (
             self._spyall 
             and user_id not in self.blacklist
-            and (not self.config["ignore_inline"] or not getattr(self._cache.get(user_id), 'via_bot_id', None))
+            and (not self.config["ignore_inline"] or not getattr(cached_msg, 'via_bot_id', None) if cached_msg else True)
+        )
+
+    def _should_capture(self, user_id: int, chat_id: int) -> bool:
+        return (
+            chat_id not in self.blacklist
+            and user_id not in self.blacklist
+            and (
+                not self.whitelist
+                or chat_id in self.whitelist
+                or user_id in self.whitelist
+            )
         )
 
     @loader.raw_handler(UpdateEditChannelMessage)
@@ -478,17 +490,6 @@ class NekoSpy(loader.Module):
 
         self._cache[key] = update.message
 
-    def _should_capture(self, user_id: int, chat_id: int) -> bool:
-        return (
-            chat_id not in self.blacklist
-            and user_id not in self.blacklist
-            and (
-                not self.whitelist
-                or chat_id in self.whitelist
-                or user_id in self.whitelist
-            )
-        )
-
     @loader.raw_handler(UpdateEditMessage)
     async def pm_edit_handler(self, update: UpdateEditMessage):
         if (
@@ -500,6 +501,9 @@ class NekoSpy(loader.Module):
 
         key = update.message.id
         msg_obj = self._cache.get(key)
+        if msg_obj is None:
+            return
+
         if (
             key in self._cache
             and (
@@ -679,10 +683,11 @@ class NekoSpy(loader.Module):
             and (
                 self._spyall
                 or self._should_capture(message.sender_id, utils.get_chat_id(message))
+            )
         ):
-            media = io.BytesIO(await self.client.download_media(message.media, bytes))
+            media = io.BytesIO(await self._client.download_media(message.media, bytes))
             media.name = "sd.jpg" if message.photo else "sd.mp4"
-            sender = await self.client.get_entity(message.sender_id, exp=0)
+            sender = await self._client.get_entity(message.sender_id, exp=0)
             await (
                 self.inline.bot.send_photo
                 if message.photo
