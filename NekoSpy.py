@@ -1,9 +1,5 @@
 __version__ = (1, 0, 0)
 
-# meta developer: MartyyyK
-# scope: hisa_only
-# scope: hisa_min 0.0.1
-
 import contextlib
 import io
 import logging
@@ -77,6 +73,7 @@ class NekoSpy(loader.Module):
         "sd_media": "🔥 <b><a href='tg://user?id={}'>{}</a> sent you a self-destructing media</b>",
         "save_sd": "<emoji document_id=5420315771991497307>🔥</emoji> <b>Saving self-destructing media</b>\n",
         "cfg_save_sd": "Save self-destructing media",
+        "spyall": f"{rei} <b>Режим полного отслеживания в личных чатах теперь {{}}</b>",
     }
 
     strings_ru = {
@@ -122,6 +119,7 @@ class NekoSpy(loader.Module):
         "sd_media": "🔥 <b><a href='tg://user?id={}'>{}</a> отправил вам самоуничтожающееся медиа</b>",
         "save_sd": "<emoji document_id=5420315771991497307>🔥</emoji> <b>Сохраняю самоуничтожающиеся медиа</b>\n",
         "cfg_save_sd": "Сохранять самоуничтожающееся медиа",
+        "spyall": f"{rei} <b>Режим полного отслеживания в личных чатах теперь {{}}</b>",
     }
 
     def __init__(self):
@@ -188,6 +186,20 @@ class NekoSpy(loader.Module):
         self._next = 0
         self._threshold = 10
         self._flood_protect_sample = 60
+        self._spyall = False
+
+    @loader.command(
+        ru_doc="Включить/выключить режим полного отслеживания в личных чатах",
+    )
+    async def spyall(self, message: Message):
+        """Toggle spyall mode (track all PMs regardless of whitelist)"""
+        self._spyall = not self._spyall
+        await utils.answer(
+            message,
+            self.strings("spyall").format(
+                self.strings("on" if self._spyall else "off")
+            ),
+        )
 
     @loader.loop(interval=0.1, autostart=True)
     async def sender(self):
@@ -330,6 +342,9 @@ class NekoSpy(loader.Module):
         if self.config["enable_pm"]:
             info += self.strings("pm")
 
+        if self._spyall:
+            info += f"{self.rei} <b>Режим полного отслеживания в личных чатах включен</b>\n"
+
         if self.whitelist:
             info += self.strings("whitelist").format(
                 await self._get_entities_list(self.whitelist)
@@ -413,6 +428,13 @@ class NekoSpy(loader.Module):
                 )
             ]
 
+    def _should_track_pm(self, user_id: int) -> bool:
+        return (
+            self._spyall 
+            and user_id not in self.blacklist
+            and (not self.config["ignore_inline"] or not getattr(self._cache.get(user_id), 'via_bot_id', None))
+        )
+
     @loader.raw_handler(UpdateEditChannelMessage)
     async def channel_edit_handler(self, update: UpdateEditChannelMessage):
         if (
@@ -484,15 +506,18 @@ class NekoSpy(loader.Module):
                 self._cache[key].sender_id in self.always_track
                 or (utils.get_chat_id(self._cache[key]) in self.always_track)
                 or (
-                    self.config["log_edits"]
-                    and self._should_capture(
-                        self._cache[key].sender_id,
-                        utils.get_chat_id(self._cache[key]),
+                    (self.config["log_edits"] or self._spyall)
+                    and (
+                        self._should_track_pm(self._cache[key].sender_id)
+                        or self._should_capture(
+                            self._cache[key].sender_id,
+                            utils.get_chat_id(self._cache[key]),
+                        )
                     )
                 )
                 and (
                     (
-                        self.config["enable_pm"]
+                        (self.config["enable_pm"] or self._spyall)
                         and not isinstance(msg_obj.peer_id, PeerChat)
                         or self.config["enable_groups"]
                         and isinstance(msg_obj.peer_id, PeerChat)
@@ -554,8 +579,11 @@ class NekoSpy(loader.Module):
                 msg_obj.sender_id not in self.always_track
                 and utils.get_chat_id(msg_obj) not in self.always_track
                 and (
-                    not self._should_capture(
-                        msg_obj.sender_id, utils.get_chat_id(msg_obj)
+                    not (
+                        self._should_track_pm(msg_obj.sender_id)
+                        or self._should_capture(
+                            msg_obj.sender_id, utils.get_chat_id(msg_obj)
+                        )
                     )
                     or (self.config["ignore_inline"] and msg_obj.via_bot_id)
                     or (
@@ -563,7 +591,7 @@ class NekoSpy(loader.Module):
                         and isinstance(msg_obj.peer_id, PeerChat)
                     )
                     or (
-                        not self.config["enable_pm"]
+                        not (self.config["enable_pm"] or self._spyall)
                         and not isinstance(msg_obj.peer_id, PeerChat)
                     )
                 )
@@ -648,6 +676,9 @@ class NekoSpy(loader.Module):
             self.config["save_sd"]
             and getattr(message, "media", False)
             and getattr(message.media, "ttl_seconds", False)
+            and (
+                self._spyall
+                or self._should_capture(message.sender_id, utils.get_chat_id(message))
         ):
             media = io.BytesIO(await self.client.download_media(message.media, bytes))
             media.name = "sd.jpg" if message.photo else "sd.mp4"
