@@ -1,4 +1,4 @@
-__version__ = (1, 1, 0)  # Обновленная версия
+__version__ = (1, 0, 0)
 
 import contextlib
 import io
@@ -433,7 +433,7 @@ class NekoSpy(loader.Module):
         return (
             (self._spyall or user_id in self.always_track)
             and user_id not in self.blacklist
-            and (not self.config["ignore_inline"] or not getattr(cached_msg, 'via_bot_id', None) if cached_msg else True
+            and (not self.config["ignore_inline"] or (not getattr(cached_msg, 'via_bot_id', None) if cached_msg else True))
         )
 
     def _should_capture(self, user_id: int, chat_id: int) -> bool:
