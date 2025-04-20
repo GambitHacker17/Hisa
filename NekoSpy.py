@@ -431,9 +431,9 @@ class NekoSpy(loader.Module):
     def _should_track_pm(self, user_id: int) -> bool:
         cached_msg = self._cache.get(user_id)
         return (
-            self._spyall 
+            (self._spyall or user_id in self.always_track)
             and user_id not in self.blacklist
-            and (not self.config["ignore_inline"] or not getattr(cached_msg, 'via_bot_id', None) if cached_msg else True)
+            and (not self.config["ignore_inline"] or not getattr(cached_msg, 'via_bot_id', None) if cached_msg else True
         )
 
     def _should_capture(self, user_id: int, chat_id: int) -> bool:
