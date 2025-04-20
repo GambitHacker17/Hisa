@@ -1,3 +1,5 @@
+# meta developer: @MartyyyK
+
 from .. import loader
 from asyncio import sleep
 from telethon.tl.functions.account import UpdateStatusRequest
