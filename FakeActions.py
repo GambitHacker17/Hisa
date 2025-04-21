@@ -181,17 +181,3 @@ class FakeMod(loader.Module):
                     await sleep(randint(30, 60))
             except BaseException:
                 return
-
-    async def scrncmd(self, message):
-        """Уведомление о скриншоте (только в лс)"""
-        a = 1
-        r = utils.get_args(message)
-        if r and r[0].isdigit():
-            a = int(r[0])
-        for _ in range(a):
-            await message.client(
-                functions.messages.SendScreenshotNotificationRequest(
-                    peer=message.to_id, reply_to_msg_id=message.id
-                )
-            )
-        await message.delete()
