@@ -5,7 +5,6 @@ from typing import Tuple
 
 from telethon import TelegramClient
 from telethon.tl.custom import Message
-from telethon.tl.types import ReplyInlineMarkup, KeyboardButtonRow, KeyboardButtonCallback
 
 import speedtest
 
@@ -24,7 +23,6 @@ class SpeedtestMod(loader.Module):
             "<b><emoji document_id=5974082402434157917>🎙</emoji> Upload: <code>{upload}</code> {unit}/s</b>\n"
             "<b><emoji document_id=5974475701179387553>😀</emoji> Ping: <code>{ping}</code> ms</b>"
         ),
-        "select_unit": "Select speed unit:",
     }
 
     strings_ru = {
@@ -36,7 +34,6 @@ class SpeedtestMod(loader.Module):
             "<b><emoji document_id=5974082402434157917>🎙</emoji> Загрузить: <code>{upload}</code> {unit}/с</b>\n"
             "<b><emoji document_id=5974475701179387553>😀</emoji> Пинг: <code>{ping}</code> мс</b>"
         ),
-        "select_unit": "Выберите единицу измерения:",
     }
 
     async def speedtestcmd(self, message: Message):
@@ -44,10 +41,10 @@ class SpeedtestMod(loader.Module):
         m = await utils.answer(message, self.strings("running"))
         results = await utils.run_sync(self.run_speedtest)
         
-        # Save raw results in memory for callback
+        # Save raw results in bits per second
         self.raw_results = results
         
-        # Create inline buttons for unit selection in the correct format
+        # Create inline buttons for unit selection
         buttons = [
             [
                 {"text": "KB/s", "callback": self._unit_kb},
@@ -56,17 +53,8 @@ class SpeedtestMod(loader.Module):
             ]
         ]
         
-        # Show results in Mbit/s by default (original behavior)
-        await utils.answer(
-            m,
-            self.strings("result").format(
-                download=round(results[0] / 1024 / 1024, 2),
-                upload=round(results[1] / 1024 / 1024, 2),
-                ping=round(results[2], 3),
-                unit="Mbit"
-            ),
-            reply_markup=buttons
-        )
+        # Show results in Mbit/s by default
+        await self._show_results(m, results, "Mbit", buttons)
 
     @staticmethod
     def run_speedtest() -> Tuple[float, float, float]:
@@ -80,46 +68,45 @@ class SpeedtestMod(loader.Module):
 
     async def _unit_kb(self, call):
         """Handle KB/s button"""
-        await self._convert_units(call, "KB", 1024)
+        await self._show_results(call, self.raw_results, "KB", self._get_buttons())
 
     async def _unit_mb(self, call):
         """Handle MB/s button"""
-        await self._convert_units(call, "MB", 1024 * 1024)
+        await self._show_results(call, self.raw_results, "MB", self._get_buttons())
 
     async def _unit_mbit(self, call):
         """Handle Mbit/s button"""
-        await self._convert_units(call, "Mbit", 1024 * 1024)
+        await self._show_results(call, self.raw_results, "Mbit", self._get_buttons())
 
-    async def _convert_units(self, call, unit, divisor):
-        """Convert and display results in selected units"""
-        if not hasattr(self, 'raw_results'):
-            await call.answer("Results expired, please run test again")
-            return
-            
-        download, upload, ping = self.raw_results
-        
-        if unit == "KB":
-            # Convert to KB/s
-            download_speed = round(download / 1024, 2)
-            upload_speed = round(upload / 1024, 2)
-        elif unit == "MB":
-            # Convert to MB/s
-            download_speed = round(download / (1024 * 1024), 2)
-            upload_speed = round(upload / (1024 * 1024), 2)
-        else:  # Mbit/s
-            # Convert to Mbit/s (1 byte = 8 bits)
-            download_speed = round(download / (1024 * 1024 / 8), 2)
-            upload_speed = round(upload / (1024 * 1024 / 8), 2)
-        
-        buttons = [
+    def _get_buttons(self):
+        """Return buttons markup"""
+        return [
             [
                 {"text": "KB/s", "callback": self._unit_kb},
                 {"text": "MB/s", "callback": self._unit_mb},
                 {"text": "Mbit/s", "callback": self._unit_mbit}
             ]
         ]
+
+    async def _show_results(self, message, results, unit, buttons):
+        """Show results with proper unit conversion"""
+        download, upload, ping = results
         
-        await call.edit(
+        if unit == "KB":
+            # 1 KB = 8 Kbit, 1 B = 8 bit
+            download_speed = round(download / 8 / 1024, 2)
+            upload_speed = round(upload / 8 / 1024, 2)
+        elif unit == "MB":
+            # 1 MB = 8 Mbit
+            download_speed = round(download / 8 / 1024 / 1024, 2)
+            upload_speed = round(upload / 8 / 1024 / 1024, 2)
+        else:  # Mbit
+            # 1 Mbit = 1024 Kbit = 1024 * 1024 bit
+            download_speed = round(download / 1024 / 1024, 2)
+            upload_speed = round(upload / 1024 / 1024, 2)
+        
+        await utils.answer(
+            message,
             self.strings("result").format(
                 download=download_speed,
                 upload=upload_speed,
@@ -128,4 +115,3 @@ class SpeedtestMod(loader.Module):
             ),
             reply_markup=buttons
         )
-        await call.answer()
