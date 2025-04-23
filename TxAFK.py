@@ -29,8 +29,8 @@ class TxAFKMod(loader.Module):
                 "lname": "| afk",
                 "lname0": " ",
 
-                "bt_off_afk": "⚠️ АФК режим отключен",
-                "bt_on_afk": "💤 АФК режим снова активен",
+                "bt_off_afk": "⚠️ AFK режим отключен",
+                "bt_on_afk": "💤 AFK режим снова активен",
 
                 "_cfg_cst_btn": "Ссылка на чат которая будет отоброжаться вместе с уведомлением. (Чтобы вообще убрать напишите None)",
                 "standart_bio_text": "Кастомное описание профиля",
@@ -122,12 +122,12 @@ class TxAFKMod(loader.Module):
                 if self.config['feedback_bot'] == None:
                         await message.client(UpdateProfileRequest(about=a_afk_bio_nofb, last_name=lastname))
                 else:
-                        a_afk_bio = 'На данный момент в АФК. Связь только через '
+                        a_afk_bio = 'На данный момент в AFK. Связь только через '
                         feedback = self.config['feedback_bot']
                         aaa = a_afk_bio + feedback
                         await message.client(UpdateProfileRequest(about=aaa))
                 await self.allmodules.log("goafk")
-                await utils.answer(message, '<emoji document_id=5215519585150706301>👍</emoji> <b>АФК режим включен!</b>')
+                await utils.answer(message, '<emoji document_id=5215519585150706301>👍</emoji> <b>AFK режим включен!</b>')
                 await message.client(UpdateProfileRequest(last_name=lastname))
 
         async def ungoafkcmd(self, message):
@@ -195,7 +195,7 @@ class TxAFKMod(loader.Module):
                         if self.config['custom_button'] == None:
                                 if self.config["button"] == False:
                                         if self.config["custom_text__afk"] == None:
-                                                await self.inline.form(message=message, text=f"<b>🔅 Я сейчас нахожусь в АФК.</b>\n\nПоследний раз был в сети <code>{time}</code> назад.")
+                                                await self.inline.form(message=message, text=f"<b>🔅 Я сейчас нахожусь в AFK</b>\n\nПоследний раз был в сети <code>{time}</code> назад")
                                         else:
                                                 await self.inline.form(message=message, text=self._afk_custom_text())
 
@@ -203,11 +203,11 @@ class TxAFKMod(loader.Module):
                                         if self.config["custom_text__afk"] == None:
                                                 await self.inline.form(
                                                         message=message, 
-                                                        text=f"<b>🔅 Я сейчас нахожусь в АФК.</b>\n\nПоследний раз был в сети <code>{time}</code> назад.", 
+                                                        text=f"<b>🔅 Я сейчас нахожусь в AFK</b>\n\nПоследний раз был в сети <code>{time}</code> назад", 
                                                         reply_markup=[
                                                                 [
                                                                         {
-                                                                                "text": "🚫 Выйти с афк 🚫", 
+                                                                                "text": "🚫 Выйти из AFK 🚫", 
                                                                                 "callback": self.button_cancel,
                                                                         }
                                                                 ]
@@ -221,7 +221,7 @@ class TxAFKMod(loader.Module):
                                                         reply_markup=[
                                                                 [
                                                                         {
-                                                                                "text": "🚫 Выйти с афк 🚫", 
+                                                                                "text": "🚫 Выйти из AFK 🚫", 
                                                                                 "callback": self.button_cancel,
                                                                         }
                                                                 ]
@@ -230,7 +230,7 @@ class TxAFKMod(loader.Module):
                         else:
                                 if self.config["button"] == False:
                                         if self.config["custom_text__afk"] == None:
-                                                await self.inline.form(message=message, text=f"<b>🔅 Я сейчас нахожусь в АФК.</b>\n\nПоследний раз был в сети <code>{time}</code> назад.", reply_markup=[{"text": self.config['custom_button'][0], "url": self.config['custom_button'][1]}])
+                                                await self.inline.form(message=message, text=f"<b>🔅 Я сейчас нахожусь в AFK</b>\n\nПоследний раз был в сети <code>{time}</code> назад", reply_markup=[{"text": self.config['custom_button'][0], "url": self.config['custom_button'][1]}])
                                         else:
                                                 await self.inline.form(message=message, text=self._afk_custom_text(), reply_markup=[{"text": self.config['custom_button'][0], "url": self.config['custom_button'][1]}])
 
@@ -238,7 +238,7 @@ class TxAFKMod(loader.Module):
                                         if self.config["custom_text__afk"] == None:
                                                 await self.inline.form(
                                                         message=message, 
-                                                        text=f"<b>🔅 Я сейчас нахожусь в АФК.</b>\n\nПоследний раз был в сети <code>{time}</code> назад.", 
+                                                        text=f"<b>🔅 Я сейчас нахожусь в AFK</b>\n\nПоследний раз был в сети <code>{time}</code> назад", 
                                                         reply_markup=[
                                                                 [
                                                                         {
@@ -248,7 +248,7 @@ class TxAFKMod(loader.Module):
                                                                 ],
                                                                 [
                                                                         {
-                                                                                "text": "🚫 Выйти с афк 🚫", 
+                                                                                "text": "🚫 Выйти из AFK 🚫", 
                                                                                 "callback": self.button_cancel,
                                                                         }
                                                                 ]
@@ -268,7 +268,7 @@ class TxAFKMod(loader.Module):
                                                                 ],
                                                                 [
                                                                         {
-                                                                                "text": "🚫 Выйти с афк 🚫", 
+                                                                                "text": "🚫 Выйти из AFK 🚫", 
                                                                                 "callback": self.button_cancel,
                                                                         }
                                                                 ]
@@ -292,7 +292,7 @@ class TxAFKMod(loader.Module):
                 self.strings["bt_off_afk"],
                 reply_markup=[
                         {
-                                "text": "🔰 Войти в афк 🔰",
+                                "text": "🔰 Войти в AFK 🔰",
                                 "callback": self.button_cancel_on,
                         }
                 ]
@@ -315,7 +315,7 @@ class TxAFKMod(loader.Module):
                 self.strings["bt_on_afk"],
                 reply_markup=[
                         {
-                                "text": "🚫 Выйти с афк 🚫",
+                                "text": "🚫 Выйти из AFK 🚫",
                                 "callback": self.button_cancel,
                         }
                 ]
