@@ -1,6 +1,6 @@
 __version__ = (1, 0, 0)
 
-# meta developer: @AstroModules
+# meta developer: @MartyyyK
 
 import datetime
 import logging
