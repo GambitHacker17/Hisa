@@ -19,9 +19,9 @@ class SpeedtestMod(loader.Module):
         "author": "@MartyyyK",
         "running": "<emoji document_id=5334904192622403796>🫥</emoji> <b>Checking your internet speed...</b>",
         "result": (
-            "<b><emoji document_id=5962848855341928446>⬇️</emoji> Download: <code>{download}</code> {unit}/s</b>\n"
-            "<b><emoji document_id=5974082402434157917>🎙</emoji> Upload: <code>{upload}</code> {unit}/s</b>\n"
-            "<b><emoji document_id=5974475701179387553>😀</emoji> Ping: <code>{ping}</code> ms</b>"
+            "<b>⬇️ Download: <code>{download}</code> {unit}/s</b>\n"
+            "<b>⬆️ Upload: <code>{upload}</code> {unit}/s</b>\n"
+            "<b>📶 Ping: <code>{ping}</code> ms</b>"
         ),
     }
 
@@ -30,18 +30,18 @@ class SpeedtestMod(loader.Module):
         "_cmd_doc_speedtest": "Проверить скорость интернета",
         "running": "<emoji document_id=5334904192622403796>🫥</emoji> <b>Проверяем скорость интернета...</b>",
         "result": (
-            "<b><emoji document_id=5962848855341928446>⬇️</emoji> Скачать: <code>{download}</code> {unit}/s</b>\n"
-            "<b><emoji document_id=5974082402434157917>🎙</emoji> Загрузить: <code>{upload}</code> {unit}/s</b>\n"
-            "<b><emoji document_id=5974475701179387553>😀</emoji> Пинг: <code>{ping}</code> мс</b>"
+            "<b>⬇️ Скачать: <code>{download}</code> {unit}/s</b>\n"
+            "<b>⬆️ Загрузить: <code>{upload}</code> {unit}/s</b>\n"
+            "<b>📶 Пинг: <code>{ping}</code> мс</b>"
         ),
     }
 
     async def speedtestcmd(self, message: Message):
         m = await utils.answer(message, self.strings("running"))
         results = await utils.run_sync(self.run_speedtest)
-        
+
         self.raw_results = results
-        
+
         buttons = [
             [
                 {"text": "KB/s", "callback": self._unit_kb},
@@ -49,7 +49,7 @@ class SpeedtestMod(loader.Module):
                 {"text": "Mbit/s", "callback": self._unit_mbit}
             ]
         ]
-        
+
         await self._show_results(m, results, "Mbit", buttons)
 
     @staticmethod
@@ -82,7 +82,7 @@ class SpeedtestMod(loader.Module):
 
     async def _show_results(self, message, results, unit, buttons):
         download, upload, ping = results
-        
+
         if unit == "KB":
             download_speed = round(download / 8 / 1024, 2)
             upload_speed = round(upload / 8 / 1024, 2)
@@ -92,7 +92,7 @@ class SpeedtestMod(loader.Module):
         else:
             download_speed = round(download / 1024 / 1024, 2)
             upload_speed = round(upload / 1024 / 1024, 2)
-        
+
         await utils.answer(
             message,
             self.strings("result").format(
