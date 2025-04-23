@@ -47,22 +47,13 @@ class SpeedtestMod(loader.Module):
         # Save raw results in memory for callback
         self.raw_results = results
         
-        # Create inline buttons for unit selection
+        # Create inline buttons for unit selection in the correct format
         buttons = [
-            KeyboardButtonRow([
-                KeyboardButtonCallback(
-                    "KB/s",
-                    data="unit_kb"
-                ),
-                KeyboardButtonCallback(
-                    "MB/s",
-                    data="unit_mb"
-                ),
-                KeyboardButtonCallback(
-                    "Mbit/s",
-                    data="unit_mbit"
-                )
-            ])
+            [
+                {"text": "KB/s", "callback": self._unit_kb},
+                {"text": "MB/s", "callback": self._unit_mb},
+                {"text": "Mbit/s", "callback": self._unit_mbit}
+            ]
         ]
         
         # Show results in Mbit/s by default (original behavior)
@@ -74,7 +65,7 @@ class SpeedtestMod(loader.Module):
                 ping=round(results[2], 3),
                 unit="Mbit"
             ),
-            reply_markup=ReplyInlineMarkup(buttons)
+            reply_markup=buttons
         )
 
     @staticmethod
@@ -87,48 +78,45 @@ class SpeedtestMod(loader.Module):
         res = s.results.dict()
         return res["download"], res["upload"], res["ping"]
 
-    async def callback_handler(self, call):
-        """Handle inline button callbacks"""
+    async def _unit_kb(self, call):
+        """Handle KB/s button"""
+        await self._convert_units(call, "KB", 1024)
+
+    async def _unit_mb(self, call):
+        """Handle MB/s button"""
+        await self._convert_units(call, "MB", 1024 * 1024)
+
+    async def _unit_mbit(self, call):
+        """Handle Mbit/s button"""
+        await self._convert_units(call, "Mbit", 1024 * 1024)
+
+    async def _convert_units(self, call, unit, divisor):
+        """Convert and display results in selected units"""
         if not hasattr(self, 'raw_results'):
             await call.answer("Results expired, please run test again")
             return
             
         download, upload, ping = self.raw_results
         
-        if call.data == "unit_kb":
+        if unit == "KB":
             # Convert to KB/s
             download_speed = round(download / 1024, 2)
             upload_speed = round(upload / 1024, 2)
-            unit = "KB"
-        elif call.data == "unit_mb":
+        elif unit == "MB":
             # Convert to MB/s
-            download_speed = round(download / 1024 / 1024, 2)
-            upload_speed = round(upload / 1024 / 1024, 2)
-            unit = "MB"
-        elif call.data == "unit_mbit":
-            # Convert to Mbit/s
-            download_speed = round(download / 1024 / 1024, 2)
-            upload_speed = round(upload / 1024 / 1024, 2)
-            unit = "Mbit"
-        else:
-            await call.answer("Unknown option")
-            return
-            
+            download_speed = round(download / (1024 * 1024), 2)
+            upload_speed = round(upload / (1024 * 1024), 2)
+        else:  # Mbit/s
+            # Convert to Mbit/s (1 byte = 8 bits)
+            download_speed = round(download / (1024 * 1024 / 8), 2)
+            upload_speed = round(upload / (1024 * 1024 / 8), 2)
+        
         buttons = [
-            KeyboardButtonRow([
-                KeyboardButtonCallback(
-                    "KB/s",
-                    data="unit_kb"
-                ),
-                KeyboardButtonCallback(
-                    "MB/s",
-                    data="unit_mb"
-                ),
-                KeyboardButtonCallback(
-                    "Mbit/s",
-                    data="unit_mbit"
-                )
-            ])
+            [
+                {"text": "KB/s", "callback": self._unit_kb},
+                {"text": "MB/s", "callback": self._unit_mb},
+                {"text": "Mbit/s", "callback": self._unit_mbit}
+            ]
         ]
         
         await call.edit(
@@ -138,6 +126,6 @@ class SpeedtestMod(loader.Module):
                 ping=round(ping, 3),
                 unit=unit
             ),
-            reply_markup=ReplyInlineMarkup(buttons)
+            reply_markup=buttons
         )
         await call.answer()
