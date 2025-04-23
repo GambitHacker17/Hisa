@@ -9,7 +9,7 @@ from .. import loader, utils
 
 @loader.tds
 class InfoMod(loader.Module):
-    """Модуль для получения информации о пользователях"""
+    """Получение информации о пользователях"""
 
     strings = {
         "name": "Info",
