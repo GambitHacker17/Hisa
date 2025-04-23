@@ -9,14 +9,18 @@ from .. import loader, utils
 
 @loader.tds
 class InfoMod(loader.Module):
+    """Модуль для получения информации о пользователях"""
 
     strings = {
         "name": "Info",
         "loading": "🕐 <b>Processing entity...</b>",
         "not_chat": "🚫 <b>This is not a chat!</b>",
+        "userinfo_doc": "📋 Получить информацию о пользователе\n"
+                        "Использование: .userinfo [@username/id/реплай]",
     }
 
     async def userinfocmd(self, message: Message):
+        """Получить информацию о пользователе"""
         args = utils.get_args_raw(message)
         reply = await message.get_reply_message()
 
