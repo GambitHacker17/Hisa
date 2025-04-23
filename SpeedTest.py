@@ -37,10 +37,6 @@ class SpeedtestMod(loader.Module):
         ),
     }
 
-    async def client_ready(self, client: TelegramClient, _):
-        """client_ready hook"""
-        await client(JoinChannelRequest(channel=self.strings("author")))
-
     async def speedtestcmd(self, message: Message):
         """Run speedtest"""
         m = await utils.answer(message, self.strings("running"))
