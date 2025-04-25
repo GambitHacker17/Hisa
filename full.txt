@@ -17,3 +17,4 @@ TxAFK
 SpeedTest
 ReName
 FunQuotes
+SearchPic
