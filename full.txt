@@ -16,3 +16,4 @@ FakeActions
 TxAFK
 SpeedTest
 ReName
+FunQuotes
