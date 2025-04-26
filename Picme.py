@@ -1,5 +1,3 @@
-# Name: PicMe
-# Description: Кринж модуль
 # meta developer: @MartyyyK
 
 import hisatl
@@ -14,10 +12,10 @@ logger = logging.getLogger(__name__)
 
 @loader.tds
 class PicMe(loader.Module):
+    """Режим пикми"""
 
     strings = {
         "name": "PicMe",
-
         "p_on": "<b><emoji document_id=5373189724372474575>😘</emoji> Режим пикми включен!</b>",
         "p_off": "<b><emoji document_id=5370881342659631698>😢</emoji> Режим пикми выключен!</b>",
     }
@@ -42,15 +40,16 @@ class PicMe(loader.Module):
         self.db = db
         self._client = client
 
-    @loader.command()
+    @loader.command(
+        ru_doc="Включить/выключить режим пикми",
+        en_doc="Enable/Disable Pikmi Mode"
+    )
     async def picme(self, message):
-
         if self.db.get(self.name, "picme", False):
             self.db.set(self.name, "picme", False)
             return await utils.answer(message, self.strings["p_off"])
 
         self.db.set(self.name, "picme", True)
-
         await utils.answer(message, self.strings["p_on"])
 
     async def watcher(self, event):
@@ -61,7 +60,7 @@ class PicMe(loader.Module):
             return
         if not self.db.get(self.name, "picme", False):
             return
-        
+
         words = event.raw_text.split()
         modified_text = " ".join(
             word + (f" {random.choice(self.config['emojies'])}" if random.random() > 0.5 else "")
