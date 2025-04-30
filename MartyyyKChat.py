@@ -20,7 +20,7 @@ __version__ = (1, 0, 0)
 # scope: inline
 # scope: hisa_only
 # scope: hisa_min 1.0.0
-# requires: aiohttp websockets
+# requires: aiohttp
 
 import abc
 import asyncio
@@ -39,7 +39,6 @@ from types import FunctionType
 
 import aiohttp
 import requests
-import websockets
 from aiogram.types import CallbackQuery, ChatPermissions
 from aiogram.utils.exceptions import MessageCantBeDeleted, MessageToDeleteNotFound
 from telethon.errors import ChatAdminRequiredError, UserAdminInvalidError
