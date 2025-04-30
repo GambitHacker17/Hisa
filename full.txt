@@ -19,3 +19,4 @@ ReName
 FunQuotes
 SearchPic
 MartyyyKChat
+Stats
