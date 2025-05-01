@@ -20,3 +20,4 @@ FunQuotes
 SearchPic
 MartyyyKChat
 Stats
+ZettaAI
