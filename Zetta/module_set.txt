@@ -1,0 +1,299 @@
+Documentation:
+
+from hisatl.types import Message
+from .. import loader, utils
+
+
+
+@loader.tds
+class MyModule(loader.Module):
+    """My module"""
+    strings = {"name": "MyModule", "hello": "Hello world!"}
+    strings_ru = {"hello": "Привет мир!"}
+    strings_es = {"hello": "¡Hola mundo!"}
+    strings_de = {"hello": "Hallo Welt!"}
+
+    @loader.command(
+        ru_doc="Привет мир!",
+        es_doc="¡Hola mundo!",
+        de_doc="Hallo Welt!",
+        # ...
+    )
+    async def helloworld(self, message: Message):
+        """Hello world"""
+        await utils.answer(message, self.strings("hello"))
+The first line imports the Message type from hisatl.types and the loader module from ... The loader module contains all the necessary functions and classes to create a module.
+
+@loader.tds is a decorator that makes module translateable (tds comes from translateable_docstring) In the class docstring you should specify brief information about the module so that user, that reads it can understand, what it does.
+
+The strings dictionary is a special object, that contains translations for translateable strings. Suffix with desired language will allow user to use the module in the selected language. If there is no translation for the selected language, the default one will be used.
+
+The @loader.command decorator is used to mark a function as a command. It takes a lot of arguments. Most important ones are translations. XX_doc makes description for command in the language XX.
+
+utils.answer is an asyncronous function that answers the message. If it's possible to edit the message, it will edit it, otherwise it will send a new message. It always returns the resulted message so you can edit it again in the same command.
+
+Watcher and command tags
+Tags were introduced not long ago and continue to be developed. They are used to make filters for commands and watchers. An example of tags usage is as follows:
+
+@loader.command(only_pm=True, only_photos=True, from_id=123456789)
+async def mycommand(self, message: Message):
+    ...
+The only_pm tag makes the command work only in PMs. The only_photos tag makes the command work only with photos. The from_id tag makes the command work only if the message was sent by the user with the specified ID.
+
+Full list of available tags:
+
+no_commands - Ignore all userbot commands in watcher
+only_commands - Capture only userbot commands in watcher
+out - Capture only outgoing events
+in - Capture only incoming events
+only_messages - Capture only messages (not join events)
+editable - Capture only messages, which can be edited (no forwards etc.)
+no_media - Capture only messages without media and files
+only_media - Capture only messages with media and files
+only_photos - Capture only messages with photos
+only_videos - Capture only messages with videos
+only_audios - Capture only messages with audios
+only_docs - Capture only messages with documents
+only_stickers - Capture only messages with stickers
+only_inline - Capture only messages with inline queries
+only_channels - Capture only messages with channels
+only_groups - Capture only messages with groups
+only_pm - Capture only messages with private chats
+no_pm - Exclude messages with private chats
+no_channels - Exclude messages with channels
+no_groups - Exclude messages with groups
+no_inline - Exclude messages with inline queries
+no_stickers - Exclude messages with stickers
+no_docs - Exclude messages with documents
+no_audios - Exclude messages with audios
+no_videos - Exclude messages with videos
+no_photos - Exclude messages with photos
+no_forwards - Exclude forwarded messages
+no_reply - Exclude messages with replies
+no_mention - Exclude messages with mentions
+mention - Capture only messages with mentions
+only_reply - Capture only messages with replies
+only_forwards - Capture only forwarded messages
+startswith - Capture only messages that start with given text
+endswith - Capture only messages that end with given text
+contains - Capture only messages that contain given text
+regex - Capture only messages that match given regex
+filter - Capture only messages that pass given function
+from_id - Capture only messages from given user
+chat_id - Capture only messages from given chat
+thumb_url - Works for inline command handlers. Will be shown in help
+alias - Set single alias for a command
+aliases - Set multiple aliases for a command
+Config validators
+Validators are used to sanitize input config data. See the following example for usage:
+
+@loader.tds
+class MyModule(loader.Module):
+    ...
+
+    def __init__(self):
+        self.config = loader.ModuleConfig(
+            loader.ConfigValue(
+                "task_delay",
+                60,
+                "Delay between tasks in seconds",
+                validator=loader.validators.Integer(minimum=0),
+            ),
+            loader.ConfigValue(
+                "sleep_between_tasks",
+                False,
+                "Sleep between tasks instead of waiting for them to finish",
+                validator=loader.validators.Boolean(),
+            ),
+            loader.ConfigValue(
+                "tasks_to_run",
+                [],
+                "Tasks to run",
+                validator=loader.validators.MultiChoice(["task1", "task2", "task3"]),
+            ),
+        )
+Full list of available validators:
+
+Boolean - True or False
+Integer - Integer number
+Choice - One of the given options
+MultiChoice - One or more of the given options
+Series - One or more options (not from the given list)
+Link - Valid URL
+String - Any string
+RegExp - String that matches the given regular expression
+Float - Float number
+TelegramID - Telegram ID
+Union - Used to combine multiple validators (Integer or Float etc.)
+NoneType - None
+Hidden - Good for tokens and over sensitive data
+Emoji - Valid emoji(-s)
+EntityLike - Valid entity (user, chat, channel etc.) - link, id or url
+You can create your own validators. For this purpose use the base class Validator (hisa.loader.validators.Validator):
+
+class Cat(Validator):
+    def __init__(self):
+        super().__init__(self._validate, {"en": "cat's name", "ru": "именем кошечки"})
+    
+    @staticmethod
+    def _validate(value: typing.Any) -> str:
+        if not isinstance(value, str):
+            raise ValidationError("Cat's name must be a string")
+        
+        if value not in {"Mittens", "Fluffy", "Garfield"}:
+            raise ValidationError("This cat is not allowed")
+        
+        return f"Cat {value}"
+
+
+...
+
+loader.ConfigValue(
+    "cat",
+    "Mittens",
+    "Cat's name",
+    validator=Cat(),
+)
+Database operations
+Hisa has a built-in database. You can use it to persistently store data required for your module to work. First way is to use database object directly:
+
+self._db.get(owner, value, default)
+self._db.set(owner, value, data)
+self._db.pointer(owner, value, default)
+Much better approach is to use wrappers:
+
+self.get(value, default)
+self.set(value, data)
+self.pointer(value, default)
+self.get and self.set are pretty straight-forward, whereas self.pointer is a bit more complicated. It returns a pointer to the value in the database. This pointer can be used to change the value in the database without having to call self.set again. This is useful for example when you want to periodically add / remove items from a list in the database. See the following example:
+
+self._users = self.pointer("users", [])
+self._users.append("John")
+self._users.extend(["Jane", "Joe", "Doe"])
+self._users.remove("Doe")
+self._state = self.get("state", False)
+self._state = not self._state
+self.set("state", self._state)
+Internal methods and properties
+There're several built-in methods and properties, which are monkey-patched into modules
+
+self._client - Current Telegram client object
+self._db - Current database object
+self._me - Current user object
+self.inline - Inline manager used to invoke forms, galleries and lists
+self.hisa - True if module is running in Hisa
+self.get_prefix - Get current command prefix
+
+self.invoke - Invoke another module's command
+
+self.lookup - Search for installed module
+
+self.request_join - request to join chat / channel
+
+example of a python module: " from hisatl.tl.patched import Message
+
+import logging
+
+
+from .. import loader, utils
+
+
+logger = logging.getLogger(__name__)
+
+
+# сам класс модуля
+@loader.tds
+class AutoFormatter(loader.Module):
+    """Automatically formats the text of your messages | Check The Config"""
+
+    # нужные переменные
+    strings = {
+        "name": "AutoFormatter",
+        "status": "Module enabled or disabled",
+        "format": "Text format. Where {} is the original message text",
+        "type": "Formatting Type",
+        "exceptions": "This is exceptions, this text is not formated",
+        "disabled": "Module is now disabled",
+        "enabled": "Module is now enabled",
+    }
+    strings_ru = {
+        "status": "Включен или выключен модуль",
+        "format": "Формат текста. Где {} это исходный текст сообщения",
+        "type": "Тип форматирования",
+        "exceptions": "Это исключения, этот текст не будет форматироваться",
+        "disabled": "Модуль сейчас выключен",
+        "enabled": "Модуль сейчас включен",
+    }
+
+    def __init__(self):
+        self.config = loader.ModuleConfig(
+            loader.ConfigValue(
+                "status",
+                False,
+                lambda: self.strings("status"),
+                validator=loader.validators.Boolean(),
+            ),
+            loader.ConfigValue(
+                "format",
+                "<b>{}</b>",
+                lambda: self.strings("format"),
+                validator=loader.validators.String(),
+            ),
+            loader.ConfigValue(
+                "exceptions",
+                [],
+                lambda: self.strings("exceptions"),
+                validator=loader.validators.Series(loader.validators.String()),
+            ),
+        )
+
+    @loader.watcher(
+        only_messages=True,
+        no_commands=True,
+        no_stickers=True,
+        no_docs=True,
+        no_audios=True,
+        no_videos=True,
+        no_photos=True,
+        no_forwards=True,
+    )
+    async def watcher(self, message):
+        if not self.config["status"]:
+            return
+
+        exc = self.config["exceptions"]
+        if message.from_id == self._tg_id:
+            f = self.config["format"]
+            text = message.text
+            if exc != [None]:
+                for e in exc:
+                    if str(e).strip() == text.strip():
+                        return
+            else:
+                if f in text:
+                    return
+
+            await utils.answer(message, f"{f.format(text)}")
+
+    @loader.command(ru_doc="Включить/выключить модуль")
+    async def textformat(self, message: Message):
+        """Turn on/off The Module"""
+        self.config["status"] = not self.config["status"]
+        enable = self.strings("enabled")
+        disable = self.strings("disabled")
+        status = (
+            f"<emoji document_id=5447644880824181073>⚠️</emoji> {enable}"
+            if self.config["status"]
+            else f"<emoji document_id=5447644880824181073>⚠️</emoji> {disable}"
+        )
+
+        await utils.answer(message, "<b>{}</b>".format(status)) "
+
+
+Important note: Modules are written in Pyrogram.
+
+You only need to write code for the given prompt. You can write comments and explanations of the code inside the code using the comm
+
+Write the code in a special text format: ``````
+
+explain the code using comments: #comment. So as not to violate the syntax
