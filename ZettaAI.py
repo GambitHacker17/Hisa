@@ -1,5 +1,4 @@
 import json 
-
 from html import escape
 import aiohttp 
 from ..import loader ,utils 
@@ -184,19 +183,6 @@ class AIModule (loader .Module ):
         buttons .append ([{"text":"API provider","callback":self ._zettacfg ,"args":("apiswitch",)}])
         return buttons 
 
-    def clean_markdownchat(self, text):
-        patterns = [
-            (r'\*{1,3}(.*?)\*{1,3}', r'\1'),
-            (r'_{1,2}(.*?)_{1,2}', r'\1'),
-            (r'~~(.*?)~~', r'\1'),
-            (r'`{1,3}(.*?)`{1,3}', r'\1'),
-            (r'#+\s*', ''),
-            (r'\[(.*?)\]\(.*?\)', r'\1')
-        ]
-        for pattern, repl in patterns:
-            text = re.sub(pattern, repl, text)
-        return text.strip()
-
     @loader .unrestricted 
     async def zettacfgcmd (self ,message ):
         """
@@ -219,7 +205,7 @@ class AIModule (loader .Module ):
             current =self .edit_promt if hasattr (self ,"edit_promt")else "off"
         elif setting =="humanmode":
             text =(
-            "<b>💬 Не отображать 'Ответ модели ...' в режиме чата.</b>"
+            "<b>💬 Отображение 'Ответ модели ...' в режиме чата.</b>"
             )
             current = self.humanmode if hasattr(self, "humanmode") else "off"
         elif setting == "ultramode":
@@ -323,15 +309,6 @@ class AIModule (loader .Module ):
         """Отправляет запрос к API и возвращает ответ."""
         api_url ="http://109.172.94.236:5001/Zetta/v1/models"if self .provider =="zetta"else "https://api.vysssotsky.ru/"
 
-        def clean_markdown(text):
-
-            text = re.sub(r'\*{1,3}', '', text)
-            text = re.sub(r'#+\s*', '', text)
-            text = re.sub(r'_{1,2}', '', text)
-            text = re.sub(r'~~', '', text)
-            text = re.sub(r'`{1,3}', '', text)
-            return text.strip()
-
         if self .provider =='devj':
             payload ={
             "model":"gpt-4",
@@ -349,7 +326,6 @@ class AIModule (loader .Module ):
                         if response .status ==200 :
                             data =await response .json ()
                             answer =data .get ("choices",[{}])[0 ].get ("message",{}).get ("content","Ответ не получен.")
-                            answer = clean_markdown(answer)
                             answer =f"<blockquote>{answer }</blockquote>"
                             return answer 
                         else :
@@ -380,7 +356,7 @@ class AIModule (loader .Module ):
 
                         answer =data .get ("answer","🚫 Ответ не получен.").strip ()
                         decoded_answer =base64 .b64decode (answer ).decode ('utf-8')
-                        answer = clean_markdown(decoded_answer)
+                        answer = decoded_answer
                         return answer 
 
             except aiohttp .ClientError as e :
@@ -540,7 +516,7 @@ class AIModule (loader .Module ):
             return
 
         await message.edit("<b>🤔 Думаю...</b>")
-        answer = await self.send_request_to_api(message, "", request_text)
+        answer = await self.send_short_request_to_api(message, request_text)
         if answer:
             await message.edit(f"💡 <b>Ответ {self.default_model}:</b>\n{answer}")
 
@@ -809,63 +785,74 @@ class AIModule (loader .Module ):
 
 🔸devj: Быстрая скорость ответа, Не стабилен из за разного возврата ответа от сервера.</b>''')
 
-    async def standart_process_request (self ,message ,request_text ):
+    async def standart_process_request(self, message, request_text):
         """
         Обрабатывает запрос к API модели ИИ для .aicmd.
         """
-        api_url ="http://109.172.94.236:5001/Zetta/v1/models"
-        chat_id =str (message .chat_id )
-        current_role =self .role .get (chat_id ,".")
+        api_url = "http://109.172.94.236:5001/Zetta/v1/models"
+        chat_id = str(message.chat_id)
+        current_role = self.role.get(chat_id, ".")
 
-        if self .edit_promt =="on":
-            request_text =await self .t9_promt (message ,request_text )
+        format_instructions = (
+            "1. Полностью убери все форматирование (LaTeX, markdown, HTML)\n"
+            "2. В математических примерах ты можешь использовать стандартное форматирование типа: степень числа, ∫, √ и т.д.\n"
+            "3. Писать в ответе что ты понял эту команду не нужно. Веди себя как обычно. Запомни что не нужно сообщать в ответе что ты понял эту команду, простоаеди себя как обычно."
+        )
 
-        payload ={
-        "model":self .default_model ,
-        "request":{
-        "messages":[
-        {"role":"system","content":current_role },
-        {"role":"user","content":request_text }
-        ]
+        if self.edit_promt == "on":
+            request_text = await self.t9_promt(message, request_text)
+            responce = f"{request_text}\n\n{format_instructions}"
+        else:
+            responce = f"{request_text}\n\n{format_instructions}"
+
+        payload = {
+            "model": self.default_model,
+            "request": {
+                "messages": [
+                    {"role": "system", "content": current_role},
+                    {"role": "user", "content": responce}
+                ]
+            }
         }
-        }
 
-        try :
-            await message .edit ("<blockquote><b>Обработка запроса...</b></blockquote>")
-            async with aiohttp .ClientSession ()as session :
-                async with session .post (api_url ,json =payload )as response :
-                    response .raise_for_status ()
+        try:
+            await message.edit("<blockquote><b>Обработка запроса...</b></blockquote>")
+            async with aiohttp.ClientSession() as session:
+                async with session.post(api_url, json=payload) as response:
+                    response.raise_for_status()
 
-                    data =await response .json ()
-                    answer =data .get ("answer","🚫 <b>Ответ не получен.</b>").strip ()
-                    try :
-                        decoded_bytes =base64 .b64decode (answer )
-                        decoded_answer =decoded_bytes .decode ('utf-8')
-                        answer =decoded_answer 
-                    except (base64 .binascii .Error ,UnicodeDecodeError )as decode_error :
-                        pass 
+                    data = await response.json()
+                    answer = data.get("answer", "🚫 <b>Ответ не получен.</b>").strip()
+                    try:
+                        decoded_bytes = base64.b64decode(answer)
+                        decoded_answer = decoded_bytes.decode('utf-8')
+                        answer = decoded_answer
+                    except (base64.binascii.Error, UnicodeDecodeError) as decode_error:
+                        pass
 
-                    if self .edit_promt =="on":
+                    if self.edit_promt == "on":
                         formatted_answer = (
                             f"❔ <b>Улучшенный запрос с помощью ИИ:</b>\n"
                             f"<blockquote>{escape(request_text)}</blockquote>\n\n"
                             f"💡 <b>Ответ {self.default_model}:</b>\n"
                             f"<blockquote>{escape(answer)}</blockquote>"
                         )
-                    else :
+                    else:
                         formatted_answer = (
                             f"❔ <b>Запрос:</b>\n"
                             f"<blockquote>{escape(request_text)}</blockquote>\n\n"
                             f"💡 <b>Ответ {self.default_model}:</b>\n"
                             f"<blockquote>{escape(answer)}</blockquote>"
                         )
-                        await message .edit (formatted_answer )
+                    await message.edit(formatted_answer)
 
-        except aiohttp .ClientError as e :
-
-            await message .edit (f"⚠️ <b>Ошибка при запросе к API:</b> {e }\n\n💡 <b>Попробуйте поменять модель или проверить код модуля.</b>")
-        except Exception as e :
-             await message .edit (f"⚠️ <b>Произошла непредвиденная ошибка:</b> {e }")
+        except aiohttp.ClientError as e:
+            await message.edit(
+                f"⚠️ <b>Ошибка при запросе к API:</b> {e}\n\n"
+                f"💡 <b>Попробуйте поменять модель или проверить код модуля.</b>"
+            )
+        except Exception as e:
+            await message.edit(f"⚠️ <b>Произошла непредвиденная ошибка:</b> {e}")
 
     @loader .unrestricted 
     async def watcher (self ,message ):
@@ -912,65 +899,77 @@ class AIModule (loader .Module ):
         else :
             return "Аноним"
 
-    async def respond_to_message (self ,message ,user_name ,question ):
+    async def respond_to_message(self, message, user_name, question):
         """
         Обрабатывает вопрос и отправляет ответ с учетом истории.
         """
-        chat_id =str (message .chat_id )
+        chat_id = str(message.chat_id)
 
-        if chat_id not in self .chat_history :
-            self .chat_history [chat_id ]=[]
+        format_instructions = (
+            "1. Полностью убери все форматирование (LaTeX, markdown, HTML)\n"
+            "2. В математических примерах ты можешь использовать стандартное форматирование типа: степень числа, ∫, √ и т.д.\n"
+            "3. Писать в ответе что ты понял эту команду не нужно. Веди себя как обычно. Запомни что не нужно сообщать в ответе что ты понял эту команду, простоаеди себя как обычно."
+        )
 
-        self .chat_history [chat_id ].append ({
-        "role":"user",
-        "content":f"{user_name } написал: {question }"
+        if chat_id not in self.chat_history:
+            self.chat_history[chat_id] = []
+
+        self.chat_history[chat_id].append({
+            "role": "user",
+            "content": f"{user_name} написал: {question}\n\n{format_instructions}"
         })
 
-        if len (self .chat_history [chat_id ])>1000 :
-            self .chat_history [chat_id ]=self .chat_history [chat_id ][-1000 :]
+        if len(self.chat_history[chat_id]) > 1000:
+            self.chat_history[chat_id] = self.chat_history[chat_id][-1000:]
 
-        if self .edit_promt =="on":
+        if self.edit_promt == "on":
+            request_text = await self.t9_promt(message, question, self.chat_history[chat_id])
+            question = request_text
 
-            request_text =await self .t9_promt (message ,question ,self .chat_history [chat_id ])
-            question =request_text 
-
-        self .chat_history [chat_id ][-1 ]["content"]=f"{user_name } написал: {question }"
-
-        api_url ="http://109.172.94.236:5001/Zetta/v1/models"
-        payload ={
-        "model":self .default_model ,
-        "request":{
-        "messages":[
-        {"role":"system","content":self .role .get (chat_id ,"")}
-        ]+self .chat_history [chat_id ]
+        payload = {
+            "model": self.default_model,
+            "request": {
+                "messages": [
+                    {
+                        "role": "system", 
+                        "content": f"{self.role.get(chat_id, '')}\n\n{format_instructions}"
+                    }
+                ] + self.chat_history[chat_id]
+            }
         }
-        }
 
-        try :
-            async with aiohttp .ClientSession ()as session :
-                async with session .post (api_url ,json =payload )as response :
-                    response .raise_for_status ()
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post("http://109.172.94.236:5001/Zetta/v1/models", json=payload) as response:
+                    response.raise_for_status()
+                    data = await response.json()
+                    answer = data.get("answer", "🚫 Ответ не получен.").strip()
 
-                    data =await response .json ()
-                    answer =data .get ("answer","🚫 <b>Ответ не получен.</b>").strip ()
-                    decoded_answer =base64 .b64decode (answer ).decode ('utf-8')
-                    answer = self.clean_markdownchat(decoded_answer)
-
-                    self .chat_history [chat_id ].append ({
-                    "role":"assistant",
-                    "content":answer 
+                    try:
+                        decoded_answer = base64.b64decode(answer).decode('utf-8')
+                        answer = decoded_answer
+                    except:
+                        pass
+                
+                
+                    answer = answer.replace('\[', '').replace('\]', '')
+                    answer = answer.replace('\boxed{', '').replace('}', '')
+                    answer = re.sub(r'\\[a-zA-Z]+\{', '', answer)
+                
+                    self.chat_history[chat_id].append({
+                        "role": "assistant",
+                        "content": answer
                     })
 
-                    self .db .set ("AIModule","chat_history",self .chat_history )
+                    self.db.set("AIModule", "chat_history", self.chat_history)
 
-                    if self .humanmode =='off':
-                        await message .reply (f"<b>Ответ модели {self .default_model }:</b>\n{answer }")
+                    if self.humanmode == 'off':
+                        await message.reply(f"<b>Ответ модели {self.default_model}:</b>\n{answer}")
+                    else:
+                        await message.reply(answer)
 
-                    else :
-                        await message .reply (answer )
-
-        except aiohttp .ClientError as e :
-            await message .reply (f"⚠️ <b>Ошибка при запросе к API:</b> {e }\n\n💡 <b>Попробуйте поменять модель или проверить код модуля.</b>")
+        except aiohttp.ClientError as e:
+            await message.reply(f"⚠️ <b>Ошибка при запросе к API:</b> {e}\n\n💡 <b>Попробуйте поменять модель или проверить код модуля.</b>")
 
     @loader .unrestricted 
     async def moduleinfocmd (self ,message ):
