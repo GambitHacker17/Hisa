@@ -950,12 +950,7 @@ class AIModule (loader .Module ):
                         answer = decoded_answer
                     except:
                         pass
-                
-                
-                    answer = answer.replace('\[', '').replace('\]', '')
-                    answer = answer.replace('\boxed{', '').replace('}', '')
-                    answer = re.sub(r'\\[a-zA-Z]+\{', '', answer)
-                
+
                     self.chat_history[chat_id].append({
                         "role": "assistant",
                         "content": answer
