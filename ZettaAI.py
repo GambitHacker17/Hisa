@@ -219,7 +219,7 @@ class AIModule (loader .Module ):
             current =self .edit_promt if hasattr (self ,"edit_promt")else "off"
         elif setting =="humanmode":
             text =(
-            "<b>💬 Отображение 'Ответ модели ...' в режиме чата.</b>"
+            "<b>💬 Не отображать 'Ответ модели ...' в режиме чата.</b>"
             )
             current = self.humanmode if hasattr(self, "humanmode") else "off"
         elif setting == "ultramode":
