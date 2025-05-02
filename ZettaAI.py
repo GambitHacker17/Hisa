@@ -184,6 +184,19 @@ class AIModule (loader .Module ):
         buttons .append ([{"text":"API provider","callback":self ._zettacfg ,"args":("apiswitch",)}])
         return buttons 
 
+    def clean_markdownchat(self, text):
+        patterns = [
+            (r'\*{1,3}(.*?)\*{1,3}', r'\1'),
+            (r'_{1,2}(.*?)_{1,2}', r'\1'),
+            (r'~~(.*?)~~', r'\1'),
+            (r'`{1,3}(.*?)`{1,3}', r'\1'),
+            (r'#+\s*', ''),
+            (r'\[(.*?)\]\(.*?\)', r'\1')
+        ]
+        for pattern, repl in patterns:
+            text = re.sub(pattern, repl, text)
+        return text.strip()
+
     @loader .unrestricted 
     async def zettacfgcmd (self ,message ):
         """
@@ -309,8 +322,17 @@ class AIModule (loader .Module ):
     async def send_request_to_api (self ,message ,instructions ,request_text ,model ="gpt-4o-mini"):
         """Отправляет запрос к API и возвращает ответ."""
         api_url ="http://109.172.94.236:5001/Zetta/v1/models"if self .provider =="zetta"else "https://api.vysssotsky.ru/"
-        if self .provider =='devj':
 
+        def clean_markdown(text):
+
+            text = re.sub(r'\*{1,3}', '', text)
+            text = re.sub(r'#+\s*', '', text)
+            text = re.sub(r'_{1,2}', '', text)
+            text = re.sub(r'~~', '', text)
+            text = re.sub(r'`{1,3}', '', text)
+            return text.strip()
+
+        if self .provider =='devj':
             payload ={
             "model":"gpt-4",
             "messages":[{"role":"user","content":f"{instructions }\nЗапрос пользователя: {request_text }"}],
@@ -327,10 +349,11 @@ class AIModule (loader .Module ):
                         if response .status ==200 :
                             data =await response .json ()
                             answer =data .get ("choices",[{}])[0 ].get ("message",{}).get ("content","Ответ не получен.")
+                            answer = clean_markdown(answer)
                             answer =f"<blockquote>{answer }</blockquote>"
                             return answer 
                         else :
-                            await message .edit ("⚠️ Ошибка при запросе к API: Обезьяна съела арбуз🍉. Деталей ошибки нет.")
+                            await message .edit ("⚠️ Ошибка при запросе к API.")
             except Exception as e :
                 await message .edit (f"⚠️ Ошибка при запросе к API: {e }")
 
@@ -357,7 +380,7 @@ class AIModule (loader .Module ):
 
                         answer =data .get ("answer","🚫 Ответ не получен.").strip ()
                         decoded_answer =base64 .b64decode (answer ).decode ('utf-8')
-                        answer =decoded_answer 
+                        answer = clean_markdown(decoded_answer)
                         return answer 
 
             except aiohttp .ClientError as e :
@@ -849,19 +872,25 @@ class AIModule (loader .Module ):
         """
         Следит за сообщениями и отвечает, если активен режим чата.
         """
-        chat_id =str (message .chat_id )
-        if self .active_chats .get (chat_id ):
-            if self .response_mode .get (chat_id ,"all")=="reply"and not (message .is_reply and await self .is_reply_to_bot (message )):
-                return 
+        try:
+            chat_id =str (message .chat_id )
+            if self .active_chats .get (chat_id ):
+                if self .response_mode .get (chat_id ,"all")=="reply"and not (message .is_reply and await self .is_reply_to_bot (message )):
+                    return
 
-            if message .voice :
-                request_text =await self .handle_voice_message (message )
-                user_name =await self .get_user_name (message )
-                await self .respond_to_message (message ,user_name ,request_text )
-            elif message .text :
-                request_text =message .text .strip ()
-                user_name =await self .get_user_name (message )
-                await self .respond_to_message (message ,user_name ,request_text )
+                if message.text and (message.text.startswith('.chat')):
+                    return
+
+                if message .voice :
+                    request_text =await self .handle_voice_message (message )
+                    user_name =await self .get_user_name (message )
+                    await self .respond_to_message (message ,user_name ,request_text )
+                elif message .text :
+                    request_text =message .text .strip ()
+                    user_name =await self .get_user_name (message )
+                    await self .respond_to_message (message ,user_name ,request_text )
+        except Exception as e:
+            return
 
     async def is_reply_to_bot (self ,message ):
         """
@@ -925,7 +954,7 @@ class AIModule (loader .Module ):
                     data =await response .json ()
                     answer =data .get ("answer","🚫 <b>Ответ не получен.</b>").strip ()
                     decoded_answer =base64 .b64decode (answer ).decode ('utf-8')
-                    answer =decoded_answer 
+                    answer = self.clean_markdownchat(decoded_answer)
 
                     self .chat_history [chat_id ].append ({
                     "role":"assistant",
