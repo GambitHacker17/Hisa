@@ -102,9 +102,9 @@ class Entity :
             ty ,id ,hash =string .split ('.')
             ty ,id ,hash =ord (ty ),int (id ),int (hash )
         except AttributeError :
-            raise TypeError (f'expected str, got {string !r }')from None 
+            raise TypeError (f'expected str, got {string!r}')from None 
         except (TypeError ,ValueError ):
-            raise ValueError (f'malformed entity str (must be T.id.hash), got {string !r }')from None 
+            raise ValueError (f'malformed entity str (must be T.id.hash), got {string!r}')from None 
 
         return cls (EntityType (ty ),id ,hash )
 
@@ -114,7 +114,7 @@ class Entity :
         try :
             ty ,id ,hash =struct .unpack ('<Bqq',blob )
         except struct .error :
-            raise ValueError (f'malformed entity data, got {string !r }')from None 
+            raise ValueError (f'malformed entity data, got {string!r}')from None 
 
         return cls (EntityType (ty ),id ,hash )
 
