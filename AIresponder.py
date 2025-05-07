@@ -35,7 +35,10 @@ class AutoResponderMod(loader.Module):
         """Включить/выключить автоответчик"""
         self.config["ENABLED"] = not self.config["ENABLED"]
         status = "включен" if self.config["ENABLED"] else "выключен"
-        
+        await message.edit(f"<b>Автоответчик {status}</b>")
+
+    async def ailistcmd(self, message):
+        """Показать список пользователей в белом списке"""
         users_info = []
         for user_id in self.blacklist:
             try:
@@ -47,8 +50,7 @@ class AutoResponderMod(loader.Module):
 
         users_list = "\n".join(users_info) if users_info else "Список пуст"
         await message.edit(
-            f"<b>Автоответчик {status}</b>\n"
-            f"<b>Текущий белый список ({len(self.blacklist)}):</b>\n"
+            f"<b>Белый список автоответчика ({len(self.blacklist)}):</b>\n"
             f"{users_list}"
         )
 
@@ -90,7 +92,7 @@ class AutoResponderMod(loader.Module):
             except ValueError:
                 await message.edit("<b>Некорректный chat_id</b>")
 
-    async def aiblacklistcmd(self, message):
+    async def aiwhitelistcmd(self, message):
         """Добавить/удалить пользователя из белого списка <reply>"""
         target_id = None
 
