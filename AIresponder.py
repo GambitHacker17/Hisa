@@ -16,7 +16,7 @@ class AutoResponderMod(loader.Module):
             "ENABLED", False, "Включен ли автоответчик",
             "PROMPT", "Ты - полезный ассистент. Отвечай вежливо и информативно.", "Промт для ИИ",
             "SHOW_PREFIX", True, "Показывать префикс 'Ответ автоответчика'",
-            "MAX_HISTORY", 500, "Максимальная длина истории диалога"
+            "MAX_HISTORY", 15, "Максимальная длина истории диалога"
         )
         self.history = {}
         self.blacklist = set()
