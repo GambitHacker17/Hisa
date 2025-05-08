@@ -1106,29 +1106,6 @@ def check_url (url :str )->bool :
     except Exception :
         return False 
 
-def get_git_hash ()->typing .Union [str ,bool ]:
-    """
-    Get current Hisa git hash
-    :return: Git commit hash
-    """
-    try :
-        return git .Repo ().head .commit .hexsha 
-    except Exception :
-        return False 
-
-def get_commit_url ()->str :
-    """
-    Get current Hisa git commit url
-    :return: Git commit url
-    """
-    try :
-        hash_ =get_git_hash ()
-        return (
-        f'<a href="https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/{hash_}">#{hash_ [:7 ]}</a>'
-        )
-    except Exception :
-        return "Unknown"
-
 def is_serializable (x :typing .Any ,/)->bool :
     """
     Checks if object is JSON-serializable
@@ -1389,17 +1366,6 @@ def get_cpu_usage ()->float :
         return 0 
 
 init_ts =time .perf_counter ()
-
-def get_git_info ()->typing .Tuple [str ,str ]:
-    """
-    Get git info
-    :return: Git info
-    """
-    hash_ =get_git_hash ()
-    return (
-    hash_ ,
-        f"https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/{hash_}" if hash_ else "",
-    )
 
 def get_version_raw ()->str :
     """
