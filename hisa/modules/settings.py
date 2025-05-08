@@ -51,7 +51,7 @@ class CoreMod(loader.Module):
                     "🌘 <b>Hisa userbot</b>"
                 ),
                 *version.__version__,
-                utils.get_commit_url(),
+                "release",
                 f"{hisatl.__version__} #{hisatl.tl.alltlobjects.LAYER}",
                 (
                     "🔥"
