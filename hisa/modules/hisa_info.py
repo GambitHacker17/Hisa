@@ -49,7 +49,6 @@ class HisaInfoMod(loader.Module):
             self._client.hisa_me.id,
             utils.escape_html(get_display_name(self._client.hisa_me)),
         )
-        build = utils.get_commit_url()
         _version = f'<i>{".".join(list(map(str, list(version.__version__))))}</i>'
         prefix = f"«<code>{utils.escape_html(self.get_prefix())}</code>»"
 
@@ -91,7 +90,7 @@ class HisaInfoMod(loader.Module):
             if self.config["custom_message"]
             else (
                 f'<b>{{}}</b>\n\n<b>{{}} {self.strings("owner")}:</b> {me}\n\n<b>{{}}'
-                f' {self.strings("version")}:</b> {_version} {build}\n<b>{{}}'
+                f' {self.strings("version")}:</b> {_version}\n<b>{{}}'
                 f' {self.strings("branch")}:'
                 f"</b> <code>{version.branch}</code>\n{upd}\n\n<b>{{}}"
                 f' {self.strings("prefix")}:</b> {prefix}\n<b>{{}}'
