@@ -27,3 +27,4 @@ RPSgame
 MagicBall
 QRtools
 GitClone
+AccountManager
