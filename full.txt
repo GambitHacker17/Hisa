@@ -24,3 +24,4 @@ ZettaAI
 AIresponder
 Weather
 RPSgame
+MagicBall
