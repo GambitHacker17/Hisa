@@ -28,3 +28,4 @@ MagicBall
 QRtools
 GitClone
 AccountManager
+Chess
