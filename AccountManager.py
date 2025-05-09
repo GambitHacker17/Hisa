@@ -27,9 +27,9 @@ class AccountManager(loader.Module):
         "arg_missing": "<emoji document_id=5237814653010076467>❌</emoji> <b>укажите аргументы!</b>",
         "check_true": "<emoji document_id=5229132514060167056>✅</emoji> <b>Юзернейм:</b> @{} <b>(доступен!)</b>",
         "check_false": "<emoji document_id=5235875883297824772>👤</emoji> <b>Юзернейм:</b> @{} <b>(не доступен!)</b>",
-        "check_false_args": "<emoji document_id=5237814653010076467>❌</emoji> <b>пожалуйста впишите юзернейм который вы хотите проверить...</b>",
+        "check_false_args": "<emoji document_id=5237814653010076467>❌</emoji> <b>пожалуйста впишите юзернейм который вы хотите проверить</b>",
         "full_profile_info": "<emoji document_id=5237814653010076467>❌</emoji> Полная информация о профиле:",
-        "id": "<emoji document_id=5228764435362900200>🖼️</emoji> Идентификатор: @{}",
+        "id": "<emoji document_id=5228764435362900200>🖼️</emoji> Идентификатор: {}",
         "first_name": "<emoji document_id=5237814653010076467>❌</emoji> Имя: {}",
         "username": "<emoji document_id=5231112502573555738>👤</emoji> Юзернейм: @{}",
         "bio": "<emoji document_id=5233261334841289002>📝</emoji> Описание профиля: {}",
@@ -198,7 +198,7 @@ class AccountManager(loader.Module):
             f"<emoji document_id=5231112502573555738>👤</emoji> <b>фото профиля:</b> {self._format_privacy(profile_photo.rules)}",
             f"<emoji document_id=5231112502573555738>👤</emoji> <b>пересылки сообщений:</b> {self._format_privacy(forwards.rules)}",
             f"<emoji document_id=5231112502573555738>👤</emoji> <b>приглашения в группы:</b> {self._format_privacy(groups.rules)}",
-            f"<emoji document_id=5231112502573555738>👤</emoji> <b>кляжки/голосовые:</b> {self._format_privacy(voice.rules)}",
+            f"<emoji document_id=5231112502573555738>👤</emoji> <b>кружки/голосовые:</b> {self._format_privacy(voice.rules)}",
             f"<emoji document_id=5231112502573555738>👤</emoji> <b>звонки:</b> {self._format_privacy(call.rules)}",
             f"<emoji document_id=5231112502573555738>👤</emoji> <b>установленная дата удаления аккаунта:</b> {time_account_ttl.days} Дней\n"
             f"<emoji document_id=5231112502573555738>👤</emoji> <b>архив и новые чаты:</b> {'<emoji document_id=5237814653010076467>❌</emoji> Скрыто' if global_settings.archive_and_mute_new_noncontact_peers else '<emoji document_id=5229132514060167056>✅</emoji> Не скрыто'}"
