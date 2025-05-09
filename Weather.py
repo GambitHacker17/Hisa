@@ -1,4 +1,4 @@
-# meta developer: @hikka_mods
+# meta developer: @MartyyyK
 
 import logging
 import requests
