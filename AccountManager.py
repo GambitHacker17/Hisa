@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 @loader.tds
 class AccountManager(loader.Module):
-    """Менеджер Telegram аккауна"""
+    """Менеджер Telegram аккаунта"""
 
     strings = {
         "name": "AccountManager",
