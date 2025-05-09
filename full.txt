@@ -25,3 +25,4 @@ AIresponder
 Weather
 RPSgame
 MagicBall
+QRtools
