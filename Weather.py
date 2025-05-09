@@ -110,8 +110,7 @@ class Weather(loader.Module):
 
 <b>🌅 Time:</b>
 ├ 🌅 Sunrise: <code>{sunrise}</code>
-├ 🌇 Sunset: <code>{sunset}</code>
-└ ⏱ Local time: <code>{local_time}</code>
+└ 🌇 Sunset: <code>{sunset}</code>
 
 <b>📅 Forecast for {forecast_days} days:</b>
 {forecast}
@@ -142,8 +141,7 @@ class Weather(loader.Module):
 
 <b>🌅 Время:</b>
 ├ 🌅 Восход: <code>{sunrise}</code>
-├ 🌇 Закат: <code>{sunset}</code>
-└ ⏱ Местное время: <code>{local_time}</code>
+└ 🌇 Закат: <code>{sunset}</code>
 
 <b>📅 Прогноз на {forecast_days} дня:</b>
 {forecast}
