@@ -30,3 +30,4 @@ GitClone
 AccountManager
 Chess
 Neofetch
+InlineButtons
