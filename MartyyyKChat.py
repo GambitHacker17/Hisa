@@ -11,15 +11,9 @@
 # .frename     | .clnraid  | .myrights   | .gban     | .gunban  
 # ---------------------------------------------------------------------------------
 
-__version__ = (1, 0, 0)
 
 # meta desc: Chat administrator toolkit
 # meta developer: @MartyyyK
-
-# scope: disable_onload_docs
-# scope: inline
-# scope: hisa_only
-# scope: hisa_min 1.0.0
 # requires: aiohttp
 
 import abc
