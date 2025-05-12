@@ -1,5 +1,3 @@
-__version__ = (1, 0, 0)
-
 # meta developer: @MartyyyK
 
 from telethon.tl.types import Message
