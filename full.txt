@@ -32,3 +32,4 @@ Chess
 Neofetch
 InlineButtons
 ManageDB
+SecretMessage
