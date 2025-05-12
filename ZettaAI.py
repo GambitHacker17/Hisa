@@ -1,3 +1,5 @@
+# meta developer: @MartyyyK
+
 import json 
 from html import escape
 import aiohttp 
