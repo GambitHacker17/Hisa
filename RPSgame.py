@@ -1,7 +1,4 @@
-# scope: hisa_only
 # meta developer: @MartyyyK
-
-__version__ = (1, 0, 0)
 
 import time
 import random
