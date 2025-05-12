@@ -953,7 +953,7 @@ class LoaderMod(loader.Module):
                 developer = self.strings("developer").format(
                     utils.escape_html(developer)
                     if isinstance(developer_entity, Channel)
-                    else f"<code>{utils.escape_html(developer)}</code>"
+                    else developer
                 )
             else:
                 developer = ""
