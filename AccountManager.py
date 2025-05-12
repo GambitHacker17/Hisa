@@ -1,7 +1,5 @@
 # meta developer: @MartyyyK
 
-__version__ = (1, 0, 0)
-
 from telethon import functions, types
 from telethon.tl.functions.users import GetFullUserRequest
 import logging
