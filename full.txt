@@ -31,3 +31,4 @@ AccountManager
 Chess
 Neofetch
 InlineButtons
+ManageDB
