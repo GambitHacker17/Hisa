@@ -10,6 +10,7 @@
 # .fnotes      | .fdeflist | .dmute      | .dban     | .dwarn   
 # .frename     | .clnraid  | .myrights   | .gban     | .gunban  
 # ---------------------------------------------------------------------------------
+__version__ = (1, 0, 0)
 
 
 # meta desc: Chat administrator toolkit
