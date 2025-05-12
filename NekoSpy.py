@@ -1,4 +1,4 @@
-__version__ = (1, 0, 0)
+# meta developer: @MartyyyK
 
 import contextlib
 import io
