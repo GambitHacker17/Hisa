@@ -1,5 +1,4 @@
 # meta developer: @MartyyyK
-# scope: hisa_only
 
 import asyncio
 
