@@ -1,6 +1,4 @@
 # meta developer: @MartyyyK
-# scope: hisa_only
-# scope: hisa_min 0.0.1
 
 import logging
 import random
