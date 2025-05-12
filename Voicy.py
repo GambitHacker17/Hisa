@@ -1,9 +1,5 @@
-__version__ = (1, 0, 0)
-
 # meta developer: @MartyyyK
 # scope: ffmpeg
-# scope: hisa_only
-# scope: hisa_min 0.0.1
 # requires: pydub speechrecognition python-ffmpeg
 
 import asyncio
