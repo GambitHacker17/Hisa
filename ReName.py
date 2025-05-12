@@ -1,8 +1,4 @@
-__version__ = (1, 0, 0)
-          
 # meta developer: @MartyyyK
-# scope: hisa_only
-# scope: hisa_min 0.0.1
 
 import asyncio
 import logging
