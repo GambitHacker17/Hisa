@@ -1,13 +1,10 @@
 #meta developer: @MartyyyK
-#scope: hisa_only 
-#scope: hisa_min 1.0.0
 
 import logging
 import requests
 from hisa import loader, utils
 import time
 
-__version__=(1, 0, 0)
 logger=logging.getLogger(__name__)
 
 class GitClone(loader.Module):
