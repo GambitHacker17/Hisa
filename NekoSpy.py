@@ -74,7 +74,7 @@ class NekoSpy(loader.Module):
         "sd_media": "🔥 <b><a href='tg://user?id={}'>{}</a> sent you a self-destructing media</b>",
         "save_sd": "<emoji document_id=5420315771991497307>🔥</emoji> <b>Saving self-destructing media</b>\n",
         "cfg_save_sd": "Save self-destructing media",
-        "spyall": f"{rei} <b>Режим полного отслеживания в личных чатах теперь {{}}</b>",
+        "spyall": f"{rei} <b>Режим слежения в личных чатах теперь {{}}</b>",
     }
 
     strings_ru = {
@@ -120,7 +120,7 @@ class NekoSpy(loader.Module):
         "sd_media": "🔥 <b><a href='tg://user?id={}'>{}</a> отправил вам самоуничтожающееся медиа</b>",
         "save_sd": "<emoji document_id=5420315771991497307>🔥</emoji> <b>Сохраняю самоуничтожающиеся медиа</b>\n",
         "cfg_save_sd": "Сохранять самоуничтожающееся медиа",
-        "spyall": f"{rei} <b>Режим полного отслеживания в личных чатах теперь {{}}</b>",
+        "spyall": f"{rei} <b>Режим слежения в личных чатах теперь {{}}</b>",
     }
 
     def __init__(self):
@@ -190,10 +190,10 @@ class NekoSpy(loader.Module):
         self._spyall = False
 
     @loader.command(
-        ru_doc="Включить/выключить режим полного отслеживания в личных чатах",
+        ru_doc="Включить/выключить режим слежения во всех личных чатах",
     )
     async def spyall(self, message: Message):
-        """Toggle spyall mode (track all PMs regardless of whitelist)"""
+        """Toggle spyall mode (track all PMs)"""
         self._spyall = not self._spyall
         await utils.answer(
             message,
@@ -344,7 +344,7 @@ class NekoSpy(loader.Module):
             info += self.strings("pm")
 
         if self._spyall:
-            info += f"{self.rei} <b>Режим полного отслеживания в личных чатах включен</b>\n"
+            info += f"{self.rei} <b>Режим слежения в личных чатах включен</b>\n"
 
         if self.whitelist:
             info += self.strings("whitelist").format(
