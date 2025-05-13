@@ -15,7 +15,7 @@ class base64Mod(loader.Module):
         """Извлекает чистый base64 текст, игнорируя всё остальное"""
         matches = re.findall(r'(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?', text)
         if matches:
-            valid_matches = [m for m in matches if len(m) >= 20 and re.fullmatch(r'[A-Za-z0-9+/]+={0,2}', m)]
+            valid_matches = [m for m in matches if len(m) >= 3 and re.fullmatch(r'[A-Za-z0-9+/]+={0,2}', m)]
             if valid_matches:
                 return max(valid_matches, key=len)
         return ""
