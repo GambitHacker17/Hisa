@@ -33,3 +33,4 @@ Neofetch
 InlineButtons
 ManageDB
 SecretMessage
+Base64
