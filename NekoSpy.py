@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 @loader.tds
 class NekoSpy(loader.Module):
+    """Сохраняет удаленные/измененные сообщения"""
 
     rei = "<emoji document_id=5409143295039252230>👩‍🎤</emoji>"
     groups = "<emoji document_id=6037355667365300960>👥</emoji>"
