@@ -148,7 +148,7 @@ class base64Mod(loader.Module):
                     message.to_id,
                     file,
                     reply_to=reply,
-                    caption=f"<b>📤 Декодированный файл ({mime_type})</b>"
+                    caption=f"<b>📤 Декодированный файл</b>"
                 )
                 await message.delete()
             elif mime_type == 'text/plain':
