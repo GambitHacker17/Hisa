@@ -21,12 +21,15 @@ class ManageDB(loader.Module):
         "not_found": "Ключ {key} не найден в базе данных"
     }
 
+    async def client_ready(self, client, db):
+        self._current_page = 0
+
     async def delete_db(self, call, item):
         """Clean db of the module"""
         if item[0] in self._db.keys():
             self._db.pop(f"{item[0]}")
             self._db.save()
-            await call.edit(self.strings("del_text"), reply_markup=self.generate_info_all_markup())
+            await call.edit(self.strings("del_text"), reply_markup=self.generate_info_all_markup(self._current_page))
             await call.answer(self.strings("deleted").format(key=item[0]))
             return True
         await call.answer(self.strings("not_found").format(key=item[0]))
@@ -35,18 +38,21 @@ class ManageDB(loader.Module):
     async def info_db(self, call, item):
         """Info about db of the module"""
         if item[0] in self._db.keys():
-            await call.edit(f"<pre><code class='language-{item[0]}'>{html.escape(str(item[1]))}</code></pre>", reply_markup=self.generate_delete_markup(item))
+            await call.edit(f"<pre><code class='language-{item[0]}'>{html.escape(str(item[1]))}</code></pre>", 
+                          reply_markup=self.generate_delete_markup(item, self._current_page))
             return True
         await call.answer(self.strings("not_found").format(key=item[0]))
         return False
 
-    def generate_delete_markup(self, item):
+    def generate_delete_markup(self, item, page_num):
         """Generate markup for inline form"""
+        self._current_page = page_num
         markup = [[]]
         markup[-1].append(
             {
                 'text': self.strings("back_btn"),
                 'callback': self.main_menu,
+                'args': [page_num]
             }
         )
         markup[-1].append(
@@ -59,6 +65,8 @@ class ManageDB(loader.Module):
         return markup
 
     async def main_menu(self, message, page_num=0):
+        """Show main menu with specified page"""
+        self._current_page = page_num
         await utils.answer(
             message,
             self.strings("del_text"),
@@ -67,6 +75,7 @@ class ManageDB(loader.Module):
 
     def generate_info_all_markup(self, page_num=0):
         """Generate markup for inline form with 3x3 grid and navigation buttons"""
+        self._current_page = page_num
         items = list(self._db.items())
         markup = [[]]
         items_per_page = 9
@@ -110,6 +119,7 @@ class ManageDB(loader.Module):
 
     async def change_page(self, call, page_num):
         """Change to the specified page"""
+        self._current_page = page_num
         await call.edit(self.strings("del_text"), reply_markup=self.generate_info_all_markup(page_num))
 
     @loader.command(
@@ -117,4 +127,4 @@ class ManageDB(loader.Module):
     )
     async def mydbcmd(self, message):
         """Check the info of the modules"""
-        await self.main_menu(message=message)
+        await self.main_menu(message=message, page_num=0)
