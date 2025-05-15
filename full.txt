@@ -36,3 +36,4 @@ SecretMessage
 Base64
 CommandsLogger
 Declaration
+Barcode
