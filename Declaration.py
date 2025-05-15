@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 @loader.tds
 class Declaration(loader.Module):
-    """Declare love with your bot"""
+    """Declare love with your Hisa bot"""
 
     strings = {
         "name": "Declaration",
