@@ -37,3 +37,4 @@ Base64
 CommandsLogger
 Declaration
 Barcode
+AnonSMS
