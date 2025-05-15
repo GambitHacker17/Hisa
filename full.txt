@@ -35,3 +35,4 @@ ManageDB
 SecretMessage
 Base64
 CommandsLogger
+Declaration
