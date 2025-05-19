@@ -12,9 +12,9 @@ from telethon.tl.types import Document, Message
 
 from .. import loader, utils
 
-
 @loader.tds
 class MusicDLMod(loader.Module):
+    """Download music"""
     strings = {
         "name": "MusicDL",
         "args": "🚫 <b>Arguments not specified</b>",
@@ -61,7 +61,7 @@ class MusicDLMod(loader.Module):
         await self._client.send_file(
             message.peer_id,
             result,
-            caption=f"🎧 {utils.ascii_face()}",
+            caption=f"",
             reply_to=getattr(message, "reply_to_msg_id", None),
         )
         if msg.out:
