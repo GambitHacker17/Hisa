@@ -37,7 +37,7 @@ class tiktokModule(loader.Module):
                 validator=loader.validators.String(),
             ),
             loader.ConfigValue(
-                "audio_artist", '@MartyyyK,
+                "audio_artist", '@MartyyyK',
                 "Установить автора музыки",
                 validator=loader.validators.String(),
             ),
