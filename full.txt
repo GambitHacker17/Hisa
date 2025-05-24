@@ -38,3 +38,4 @@ CommandsLogger
 Declaration
 Barcode
 AnonSMS
+TgSpammer
