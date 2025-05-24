@@ -1,105 +1,199 @@
 # meta developer: @MartyyyK
-# requires: speedtest-cli
 
-from typing import Tuple
-
-from telethon import TelegramClient
-from telethon.tl.custom import Message
-
-import speedtest
-
+import asyncio
+import aiohttp
+import time
+from datetime import datetime
 from .. import loader, utils
 
 @loader.tds
-class SpeedtestMod(loader.Module):
-    """Tests your internet speed"""
+class SpeedTestMod(loader.Module):
+    """Измерение скорости интернета"""
 
     strings = {
-        "name": "Speedtest",
-        "author": "@MartyyyK",
-        "running": "<emoji document_id=5334904192622403796>🫥</emoji> <b>Checking your internet speed...</b>",
-        "result": (
-            "<b>⬇️ Download: <code>{download}</code> {unit}/s</b>\n"
-            "<b>⬆️ Upload: <code>{upload}</code> {unit}/s</b>\n"
-            "<b>📶 Ping: <code>{ping}</code> ms</b>"
-        ),
+        "name": "SpeedTest",
+        "_cls_doc": "Speed Test - Test your internet speed",
+        
+        "testing_en": "🔄 <b>Testing speed...</b>",
+        "testing_ru": "🔄 <b>Тестирование скорости...</b>",
+
+        "result_en": """<b>📊 Internet Speed Test:</b>
+
+<b>📥 Download:</b> <code>{}</code>
+<b>📤 Upload:</b> <code>{}</code>
+<b>🕒 Ping:</b> <code>{}</code>
+
+<b>🌐 Server:</b> <code>{}</code>
+<b>📡 Provider:</b> <code>{}</code>
+
+<b>⏳ Estimated download time:</b>
+<b>📄 Photo (5 MB):</b> <code>{}</code>
+<b>📱 App (100 MB):</b> <code>{}</code>
+<b>🎥 HD Movie (2 GB):</b> <code>{}</code>
+<b>🎮 Game (50 GB):</b> <code>{}</code>
+
+<b>⌚️ Test took:</b> <code>{}</code>
+<b>📅 Time:</b> <code>{}</code>""",
+
+        "result_ru": """<b>📊 Тест скорости интернета:</b>
+
+<b>📥 Загрузка:</b> <code>{}</code>
+<b>📤 Отдача:</b> <code>{}</code>
+<b>🕒 Пинг:</b> <code>{}</code>
+
+<b>🌐 Сервер:</b> <code>{}</code>
+<b>📡 Провайдер:</b> <code>{}</code>
+
+<b>⏳ Расчетное время загрузки:</b>
+<b>📄 Фото (5 МБ):</b> <code>{}</code>
+<b>📱 Приложение (100 МБ):</b> <code>{}</code>
+<b>🎥 Фильм HD (2 ГБ):</b> <code>{}</code>
+<b>🎮 Игра (50 ГБ):</b> <code>{}</code>
+
+<b>⌚️ Тест занял:</b> <code>{}</code>
+<b>📅 Время:</b> <code>{}</code>""",
+
+        "error_en": "❌ <b>Test error:</b>\n<code>{}</code>",
+        "error_ru": "❌ <b>Ошибка при тестировании:</b>\n<code>{}</code>",
     }
 
-    strings_ru = {
-        "_cls_doc": "Проверяет скорость интернета",
-        "_cmd_doc_speedtest": "Проверить скорость интернета",
-        "running": "<emoji document_id=5334904192622403796>🫥</emoji> <b>Проверяем скорость интернета...</b>",
-        "result": (
-            "<b>⬇️ Скачать: <code>{download}</code> {unit}/s</b>\n"
-            "<b>⬆️ Загрузить: <code>{upload}</code> {unit}/s</b>\n"
-            "<b>📶 Пинг: <code>{ping}</code> мс</b>"
-        ),
-    }
-
-    async def speedtestcmd(self, message: Message):
-        m = await utils.answer(message, self.strings("running"))
-        results = await utils.run_sync(self.run_speedtest)
-
-        self.raw_results = results
-
-        buttons = [
-            [
-                {"text": "KB/s", "callback": self._unit_kb},
-                {"text": "MB/s", "callback": self._unit_mb},
-                {"text": "Mbit/s", "callback": self._unit_mbit}
-            ]
-        ]
-
-        await self._show_results(m, results, "Mbit", buttons)
-
-    @staticmethod
-    def run_speedtest() -> Tuple[float, float, float]:
-        s = speedtest.Speedtest()
-        s.get_servers()
-        s.get_best_server()
-        s.download()
-        s.upload()
-        res = s.results.dict()
-        return res["download"], res["upload"], res["ping"]
-
-    async def _unit_kb(self, call):
-        await self._show_results(call, self.raw_results, "KB", self._get_buttons())
-
-    async def _unit_mb(self, call):
-        await self._show_results(call, self.raw_results, "MB", self._get_buttons())
-
-    async def _unit_mbit(self, call):
-        await self._show_results(call, self.raw_results, "Mbit", self._get_buttons())
-
-    def _get_buttons(self):
-        return [
-            [
-                {"text": "KB/s", "callback": self._unit_kb},
-                {"text": "MB/s", "callback": self._unit_mb},
-                {"text": "Mbit/s", "callback": self._unit_mbit}
-            ]
-        ]
-
-    async def _show_results(self, message, results, unit, buttons):
-        download, upload, ping = results
-
-        if unit == "KB":
-            download_speed = round(download / 8 / 1024, 2)
-            upload_speed = round(upload / 8 / 1024, 2)
-        elif unit == "MB":
-            download_speed = round(download / 8 / 1024 / 1024, 2)
-            upload_speed = round(upload / 8 / 1024 / 1024, 2)
-        else:
-            download_speed = round(download / 1024 / 1024, 2)
-            upload_speed = round(upload / 1024 / 1024, 2)
-
-        await utils.answer(
-            message,
-            self.strings("result").format(
-                download=download_speed,
-                upload=upload_speed,
-                ping=round(ping, 3),
-                unit=unit
-            ),
-            reply_markup=buttons
+    def __init__(self):
+        self.config = loader.ModuleConfig(
+            "language", "en", "Module language (en, ru)"
         )
+
+    def format_speed(self, bytes_per_sec):
+        if bytes_per_sec <= 0:
+            return "0 Mbps"
+            
+        mbits = (bytes_per_sec * 8) / (1024 * 1024)
+        
+        if mbits < 1:
+            return f"{mbits * 1000:.1f} Kbps"
+        return f"{mbits:.1f} Mbps"
+
+    def format_time(self, size_bytes, speed_bytes_per_sec):
+        if speed_bytes_per_sec <= 0:
+            return "∞"
+        
+        seconds = size_bytes / speed_bytes_per_sec
+        
+        if seconds < 1:
+            return "< 1 sec"
+            
+        if seconds < 60:
+            return f"{seconds:.0f} sec"
+            
+        minutes = seconds / 60
+        if minutes < 60:
+            return f"{minutes:.0f} min"
+            
+        hours = minutes / 60
+        if hours < 24:
+            return f"{hours:.1f} h"
+            
+        days = hours / 24
+        return f"{days:.1f} d"
+
+    async def download_test(self, session):
+        urls = [
+            "https://speed.cloudflare.com/__down?bytes=25000000",
+            "https://speed.hetzner.de/100MB.bin",
+            "https://cdn.speedcheck.org/tests/files/10mb.dat"
+        ]
+        speeds = []
+        
+        for url in urls:
+            try:
+                start = time.time()
+                total = 0
+                async with session.get(url) as response:
+                    while True:
+                        chunk = await response.content.read(8192)
+                        if not chunk:
+                            break
+                        total += len(chunk)
+                duration = time.time() - start
+                if duration > 0:
+                    speeds.append(total / duration)
+            except:
+                continue
+                
+        return max(speeds) if speeds else 0
+
+    async def upload_test(self, session):
+        url = "https://speed.cloudflare.com/__up"
+        try:
+            data = b"0" * (1024 * 1024 * 10)
+            start = time.time()
+            async with session.post(url, data=data) as response:
+                await response.read()
+            duration = time.time() - start
+            return len(data) / duration if duration > 0 else 0
+        except:
+            return 0
+
+    async def measure_ping(self, session):
+        try:
+            start = time.time()
+            async with session.get("https://www.google.com") as response:
+                await response.read()
+            return int((time.time() - start) * 1000)
+        except:
+            return 0
+
+    async def get_network_info(self, session):
+        try:
+            async with session.get("https://ipinfo.io/json") as response:
+                data = await response.json()
+                return {
+                    "location": f"{data.get('city', 'N/A')}, {data.get('country', 'N/A')}",
+                    "org": data.get('org', 'N/A').replace('AS', '')
+                }
+        except:
+            return {"location": "N/A", "org": "N/A"}
+
+    @loader.command(
+        ru_doc="- запустить тест скорости интернета",
+        en_doc="- start internet speed test"
+    )
+    async def speedtest(self, message):
+        """- start internet speed test"""
+        
+        lang = self.config["language"]
+        await message.edit(self.strings[f"testing_{lang}"])
+        start_time = time.time()
+
+        timeout = aiohttp.ClientTimeout(total=30)
+        async with aiohttp.ClientSession(timeout=timeout) as session:
+            try:
+                network_info = await self.get_network_info(session)
+                ping = await self.measure_ping(session)
+                download_speed = await self.download_test(session)
+                upload_speed = await self.upload_test(session)
+
+                duration = time.time() - start_time
+
+                size_photo = 5 * 1024 * 1024
+                size_app = 100 * 1024 * 1024
+                size_movie = 2 * 1024 * 1024 * 1024
+                size_game = 50 * 1024 * 1024 * 1024
+
+                result = self.strings[f"result_{lang}"].format(
+                    self.format_speed(download_speed),
+                    self.format_speed(upload_speed),
+                    f"{ping}ms",
+                    network_info["location"],
+                    network_info["org"],
+                    self.format_time(size_photo, download_speed),
+                    self.format_time(size_app, download_speed),
+                    self.format_time(size_movie, download_speed),
+                    self.format_time(size_game, download_speed),
+                    f"{duration:.1f} sec",
+                    datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+                )
+
+                await message.edit(result)
+
+            except Exception as e:
+                await message.edit(self.strings[f"error_{lang}"].format(str(e)))
