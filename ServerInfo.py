@@ -1,117 +1,277 @@
 # meta developer: @MartyyyK
-# requires: psutil
-
-import contextlib
-import os
-import platform
-import sys
-
-import psutil
-from telethon.tl.types import Message
 
 from .. import loader, utils
-
-
-def bytes_to_megabytes(b: int) -> int:
-    return round(b / 1024 / 1024, 1)
+import platform
+import psutil
+import os
+import sys
+import distro
+import socket
+from datetime import datetime
+from telethon.tl.types import Message
 
 
 @loader.tds
-class serverInfoMod(loader.Module):
+class ServerInfoMod(loader.Module):
+    """Мониторинг системных ресурсов сервера/устройства"""
 
     strings = {
         "name": "ServerInfo",
-        "loading": (
-            "<emoji document_id=5271897426117009417>🚘</emoji> <b>Loading server"
-            " info...</b>"
-        ),
-        "servinfo": (
-            "<emoji document_id=5271897426117009417>🚘</emoji> <b>Server"
-            " Info</b>:\n\n<emoji document_id=5172854840321114816>💻</emoji> <b>CPU:"
-            " {cpu} Cores {cpu_load}%</b>\n<emoji"
-            " document_id=5174693704799093859>💻</emoji> <b>RAM: {ram} /"
-            " {ram_load_mb}MB"
-            " ({ram_load}%)</b>\n\n<emoji document_id=5172474181664637769>💻</emoji>"
-            " <b>Kernel: {kernel}</b>\n{arch_emoji} <b>Arch: {arch}</b>\n<emoji"
-            " document_id=5172622400986022463>💻</emoji> <b>OS: {os}</b>\n\n<emoji"
-            " document_id=5172839378438849164>💻</emoji> <b>Python: {python}</b>"
-        ),
+        "loading": "Загрузка...",
+        "error": "Недоступно получить в вашем устройстве",
+        "_cmd_doc_serverinfo": "Показывает информацию о системе с интерактивными кнопками",
+        "_cls_doc": "Модуль для мониторинга системных ресурсов сервера/устройства"
     }
 
-    strings_ru = {
-        "loading": (
-            "<emoji document_id=5271897426117009417>🚘</emoji> <b>Загрузка информации о"
-            " сервере...</b>"
-        ),
-        "servinfo": (
-            "<emoji document_id=5271897426117009417>🚘</emoji> <b>Информация о сервере"
-            "</b>:\n\n<emoji document_id=5172854840321114816>💻</emoji> <b>CPU:"
-            " {cpu} ядер(-ро) {cpu_load}%</b>\n<emoji"
-            " document_id=5174693704799093859>💻</emoji> <b>RAM: {ram} /"
-            " {ram_load_mb}MB"
-            " ({ram_load}%)</b>\n\n<emoji document_id=5172474181664637769>💻</emoji>"
-            " <b>Kernel: {kernel}</b>\n{arch_emoji} <b>Arch: {arch}</b>\n<emoji"
-            " document_id=5172622400986022463>💻</emoji> <b>OS: {os}</b>\n\n<emoji"
-            " document_id=5172839378438849164>💻</emoji> <b>Python: {python}</b>"
-        ),
-        "_cls_doc": "Показывает информацию о сервере",
-    }
+    async def client_ready(self, client, db):
+        self._db = db
+        self._client = client
 
-    @loader.command(ru_doc="Показать информацию о сервере")
+    def get_markup(self):
+        return [
+            [
+                {"text": "🔧 CPU", "callback": self.cpu_callback},
+                {"text": "💾 RAM", "callback": self.ram_callback},
+            ],
+            [
+                {"text": "💽 Диск", "callback": self.disk_callback},
+                {"text": "🌐 Сеть", "callback": self.net_callback},
+            ],
+            [
+                {"text": "📊 Процессы", "callback": self.proc_callback},
+                {"text": "🔌 Sensors", "callback": self.sens_callback},
+            ],
+            [
+                {"text": "🔄 Обновить", "callback": self.system_callback},
+            ],
+        ]
+
+    def get_back_markup(self):
+        return [
+            [
+                {"text": "⬅️ Назад", "callback": self.system_callback},
+                {"text": "🔄 Обновить", "callback": self.current_callback},
+            ],
+        ]
+
+    async def system_callback(self, call):
+        self.current_callback = self.system_callback
+        info = "<b>🖥 Системная информация</b>\n\n"
+    
+        try:
+            info += f"<b>OS:</b> {platform.system() or self.strings['error']}\n"
+        except:
+            info += f"<b>OS:</b> {self.strings['error']}\n"
+            
+        try:    
+            info += f"<b>Архитектура:</b> {platform.machine() or self.strings['error']}\n"
+        except:
+            info += f"<b>Архитектура:</b> {self.strings['error']}\n"
+            
+        try:
+            info += f"<b>Python:</b> {sys.version.split()[0]}\n"
+        except:
+            info += f"<b>Python:</b> {self.strings['error']}\n"
+            
+        try:
+            info += f"<b>Hostname:</b> {platform.node() or self.strings['error']}\n"
+        except:
+            info += f"<b>Hostname:</b> {self.strings['error']}\n"
+
+        try:
+            info += f"<b>Процессов активно:</b> {len(psutil.pids())}\n"
+        except:
+            info += f"<b>Процессов активно:</b> {self.strings['error']}\n"
+            
+        await call.edit(text=info, reply_markup=self.get_markup())
+
+    async def cpu_callback(self, call):
+        self.current_callback = self.cpu_callback
+        info = "<b>🔧 Процессор</b>\n\n"
+        
+        try:
+            info += f"<b>Модель:</b> {platform.processor() or self.strings['error']}\n"
+        except:
+            info += f"<b>Модель:</b> {self.strings['error']}\n"
+            
+        try:
+            info += f"<b>Физические ядра:</b> {psutil.cpu_count(logical=False)}\n"
+            info += f"<b>Логические ядра:</b> {psutil.cpu_count()}\n"
+        except:
+            info += f"<b>Ядра:</b> {self.strings['error']}\n"
+            
+        try:
+            info += f"<b>Загрузка общая:</b> {psutil.cpu_percent()}%\n"
+        except:
+            info += f"<b>Загрузка:</b> {self.strings['error']}\n"
+
+        await call.edit(text=info, reply_markup=self.get_back_markup())
+
+    async def ram_callback(self, call):
+        self.current_callback = self.ram_callback
+        info = "<b>💾 Память</b>\n\n"
+        
+        try:
+            mem = psutil.virtual_memory()
+            info += f"<b>RAM всего:</b> {mem.total // (1024**2)}MB\n"
+            info += f"<b>RAM доступно:</b> {mem.available // (1024**2)}MB\n"
+            info += f"<b>RAM использовано:</b> {mem.used // (1024**2)}MB\n"
+            info += f"<b>RAM загрузка:</b> {mem.percent}%\n"
+        except:
+            info += f"<b>RAM:</b> {self.strings['error']}\n"
+
+        try:
+            swap = psutil.swap_memory()
+            info += f"\n<b>SWAP всего:</b> {swap.total // (1024**2)}MB\n"
+            info += f"<b>SWAP использовано:</b> {swap.used // (1024**2)}MB\n"
+            info += f"<b>SWAP загрузка:</b> {swap.percent}%\n"
+        except:
+            info += f"\n<b>SWAP:</b> {self.strings['error']}\n"
+            
+        await call.edit(text=info, reply_markup=self.get_back_markup())
+
+    async def disk_callback(self, call):
+        self.current_callback = self.disk_callback
+        info = "<b>💽 Диски</b>\n\n"
+        
+        try:
+            partitions = psutil.disk_partitions()
+            if partitions:
+                for partition in partitions:
+                    try:
+                        usage = psutil.disk_usage(partition.mountpoint)
+                        info += (
+                            f"<b>Раздел:</b> {partition.device}\n"
+                            f"<b>Точка монтирования:</b> {partition.mountpoint}\n"
+                            f"<b>Всего:</b> {usage.total // (1024**3)}GB\n"
+                            f"<b>Использовано:</b> {usage.used // (1024**3)}GB\n"
+                            f"<b>Загрузка:</b> {usage.percent}%\n\n"
+                        )
+                    except:
+                        continue
+            else:
+                info += f"Разделы: {self.strings['error']}\n"
+        except:
+            info += f"Диски: {self.strings['error']}\n"
+            
+        await call.edit(text=info, reply_markup=self.get_back_markup())
+
+    async def net_callback(self, call):
+        self.current_callback = self.net_callback
+        info = "<b>🌐 Сеть</b>\n\n"
+        
+        try:
+            net_io = psutil.net_io_counters()
+            info += (
+                f"<b>Отправлено:</b> {net_io.bytes_sent // (1024**2)}MB\n"
+                f"<b>Получено:</b> {net_io.bytes_recv // (1024**2)}MB\n\n"
+            )
+        except:
+            info += f"<b>Статистика:</b> {self.strings['error']}\n\n"
+            
+        try:
+            for interface, addrs in psutil.net_if_addrs().items():
+                info += f"<b>{interface}:</b>\n"
+                for addr in addrs:
+                    if addr.family == socket.AF_INET:
+                        info += f"IPv4: {addr.address}\n"
+                info += "\n"
+        except:
+            info += f"<b>Интерфейсы:</b> {self.strings['error']}\n"
+                    
+        await call.edit(text=info, reply_markup=self.get_back_markup())
+
+    async def proc_callback(self, call):
+        self.current_callback = self.proc_callback
+        info = "<b>📊 Топ процессов по CPU</b>\n\n"
+        
+        try:
+            processes = []
+            for proc in psutil.process_iter(['pid', 'name', 'cpu_percent']):
+                try:
+                    processes.append(proc.info)
+                except:
+                    continue
+                    
+            top_cpu = sorted(processes, key=lambda x: x['cpu_percent'], reverse=True)[:5]
+            
+            for proc in top_cpu:
+                info += (
+                    f"<b>PID:</b> {proc['pid']}\n"
+                    f"<b>Имя:</b> {proc['name']}\n"
+                    f"<b>CPU:</b> {proc['cpu_percent']}%\n\n"
+                )
+        except:
+            info += self.strings['error']
+                
+        await call.edit(text=info, reply_markup=self.get_back_markup())
+
+    async def sens_callback(self, call):
+        self.current_callback = self.sens_callback
+        info = "<b>🔌 Сенсоры</b>\n\n"
+        sensors_available = False
+        
+        try:
+            temps = psutil.sensors_temperatures()
+            if temps:
+                sensors_available = True
+                info += "<b>Температура:</b>\n"
+                for name, entries in temps.items():
+                    for entry in entries:
+                        info += f"<b>{name}:</b> {entry.current}°C\n"
+                info += "\n"
+        except:
+            pass
+                
+        try:
+            battery = psutil.sensors_battery()
+            if battery:
+                sensors_available = True
+                info += (
+                    "<b>Батарея:</b>\n"
+                    f"<b>Заряд:</b> {battery.percent}%\n"
+                    f"<b>Питание от сети:</b> {'Да' if battery.power_plugged else 'Нет'}\n"
+                )
+        except:
+            pass
+            
+        if not sensors_available:
+            info += self.strings['error']
+            
+        await call.edit(text=info, reply_markup=self.get_back_markup())
+
+    @loader.command()
     async def serverinfo(self, message: Message):
-        """Show server info"""
-        message = await utils.answer(message, self.strings("loading"))
+        """- показывает информацию о системе"""
+        info = "<b>🖥 Системная информация</b>\n\n"
+    
+        try:
+            info += f"<b>OS:</b> {platform.system() or self.strings['error']}\n"
+        except:
+            info += f"<b>OS:</b> {self.strings['error']}\n"
+            
+        try:    
+            info += f"<b>Архитектура:</b> {platform.machine() or self.strings['error']}\n"
+        except:
+            info += f"<b>Архитектура:</b> {self.strings['error']}\n"
+            
+        try:
+            info += f"<b>Python:</b> {sys.version.split()[0]}\n"
+        except:
+            info += f"<b>Python:</b> {self.strings['error']}\n"
+            
+        try:
+            info += f"<b>Hostname:</b> {platform.node() or self.strings['error']}\n"
+        except:
+            info += f"<b>Hostname:</b> {self.strings['error']}\n"
 
-        inf = {
-            "cpu": "n/a",
-            "cpu_load": "n/a",
-            "ram": "n/a",
-            "ram_load_mb": "n/a",
-            "ram_load": "n/a",
-            "kernel": "n/a",
-            "arch_emoji": "n/a",
-            "arch": "n/a",
-            "os": "n/a",
-        }
-
-        with contextlib.suppress(Exception):
-            inf["cpu"] = psutil.cpu_count(logical=True)
-
-        with contextlib.suppress(Exception):
-            inf["cpu_load"] = psutil.cpu_percent()
-
-        with contextlib.suppress(Exception):
-            inf["ram"] = bytes_to_megabytes(
-                psutil.virtual_memory().total - psutil.virtual_memory().available
-            )
-
-        with contextlib.suppress(Exception):
-            inf["ram_load_mb"] = bytes_to_megabytes(psutil.virtual_memory().total)
-
-        with contextlib.suppress(Exception):
-            inf["ram_load"] = psutil.virtual_memory().percent
-
-        with contextlib.suppress(Exception):
-            inf["kernel"] = utils.escape_html(platform.release())
-
-        with contextlib.suppress(Exception):
-            inf["arch"] = utils.escape_html(platform.architecture()[0])
-
-        inf["arch_emoji"] = (
-            "<emoji document_id=5172881503478088537>💻</emoji>"
-            if "64" in (inf.get("arch", "") or "")
-            else "<emoji document_id=5174703196676817427>💻</emoji>"
+        try:
+            info += f"<b>Процессов активно:</b> {len(psutil.pids())}\n"
+        except:
+            info += f"<b>Процессов активно:</b> {self.strings['error']}\n"
+            
+        await self.inline.form(
+            text=info,
+            message=message,
+            reply_markup=self.get_markup(),
         )
-
-        with contextlib.suppress(Exception):
-            system = os.popen("cat /etc/*release").read()
-            b = system.find('DISTRIB_DESCRIPTION="') + 21
-            system = system[b : system.find('"', b)]
-            inf["os"] = utils.escape_html(system)
-
-        with contextlib.suppress(Exception):
-            inf["python"] = (
-                f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
-            )
-
-        await utils.answer(message, self.strings("servinfo").format(**inf))
