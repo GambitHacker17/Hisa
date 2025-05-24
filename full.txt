@@ -39,4 +39,4 @@ Declaration
 Barcode
 AnonSMS
 TgSpammer
-TikTokdlm
+TikTokdl
