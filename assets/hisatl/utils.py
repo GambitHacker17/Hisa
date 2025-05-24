@@ -1,10 +1,11 @@
 """"""
 import base64 
-import binascii
+import binascii 
+import imghdr 
 import inspect 
 import io 
 import itertools 
-import logging
+import logging 
 import math 
 import mimetypes 
 import os 
@@ -12,11 +13,10 @@ import pathlib
 import re 
 import struct 
 from collections import namedtuple 
-from mimetypes import guess_extension
+from mimetypes import guess_extension 
 from types import GeneratorType 
 import typing 
 
-from PIL import Image
 from .extensions import markdown ,html 
 from .helpers import add_surrogate ,del_surrogate ,strip_text 
 from .tl import types 
@@ -709,28 +709,24 @@ def _get_file_info (location ):
 
     _raise_cast_fail (location ,'InputFileLocation')
 
-def _get_extension(file):
+def _get_extension (file ):
     """"""
-    if isinstance(file, str):
-        return os.path.splitext(file)[-1]
-    elif isinstance(file, pathlib.Path):
-        return file.suffix
-    elif isinstance(file, bytes):
-        try:
-            img = Image.open(io.BytesIO(file))
-            return f'.{img.format.lower()}'
-        except Exception:
-            return ''
-    elif isinstance(file, io.IOBase) and not isinstance(file, io.TextIOBase) and file.seekable():
-        try:
-            img = Image.open(file)
-            return f'.{img.format.lower()}'
-        except Exception:
-            return ''
-    elif getattr(file, 'name', None):
-        return _get_extension(file.name)
-    else:
-        return get_extension(file)
+    if isinstance (file ,str ):
+        return os .path .splitext (file )[-1 ]
+    elif isinstance (file ,pathlib .Path ):
+        return file .suffix 
+    elif isinstance (file ,bytes ):
+        kind =imghdr .what (io .BytesIO (file ))
+        return ('.'+kind )if kind else ''
+    elif isinstance (file ,io .IOBase )and not isinstance (file ,io .TextIOBase )and file .seekable ():
+        kind =imghdr .what (file )
+        return ('.'+kind )if kind is not None else ''
+    elif getattr (file ,'name',None ):
+
+        return _get_extension (file .name )
+    else :
+
+        return get_extension (file )
 
 def is_image (file ):
     """"""
