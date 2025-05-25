@@ -41,9 +41,9 @@ class PMBLMod(loader.Module):
         ),
         "banned": (
             "😃 <b>Hey there"
-            " •ᴗ•</b>\n<b>Unit «SIGMA»<b>, the <b>guardian</b> of this account. You are"
-            " <b>not approved</b>! You can contact my owner <b>in chat</b>."
-            "\n<b>I need to ban you in terms of security</b>"
+            " •ᴗ•</b>\n<b>Unit «SIGMA»<b> - the <b>guardian</b> of this account. You are"
+            " <b>not approved</b>!"
+            "\n<b>I need to ban you in terms of security.</b>"
         ),
         "removing": (
             "<emoji document_id=5456529570431770384>🚮</emoji> <b>Removing {} last"
@@ -69,8 +69,8 @@ class PMBLMod(loader.Module):
         "hello": (
             "🔏 <b>Unit «SIGMA»</b> protects your personal messages from intrusions. It"
             " will block everyone, who's trying to invade you.\n\nUse"
-            " <code>.pmbl</code> to enable protection, <code>.pmblsett</code> to"
-            " configure it and <code>.pmbanlast</code> if you've already been"
+            " <code>pmbl</code> to enable protection, <code>pmblsett</code> to"
+            " configure it and <code>pmbanlast</code> if you've already been"
             " pm-raided."
         ),
     }
@@ -90,16 +90,16 @@ class PMBLMod(loader.Module):
         ),
         "banned": (
             "😃 <b>Добрый день"
-            " •ᴗ•</b>\n<b>Юнит «SIGMA»<b>, <b>защитник</b> этого аккаунта. Вы <b>не"
-            " потверждены</b>! Вы можете связаться с моим владельцем <b>в чате</b>."
+            " •ᴗ•</b>\n<b>Юнит «SIGMA»<b> - <b>защитник</b> этого аккаунта. Вы <b>не"
+            " потверждены</b>!"
             "\n<b>Я вынужден заблокировать вас из соображений"
-            " безопасности</b>"
+            " безопасности.</b>"
         ),
         "hello": (
             "🔏 <b>Юнит «SIGMA»</b> защищает твои личные сообщения от неизвестных"
             " пользователей. Он будет блокировать всех, кто не соответствует"
-            " настройкам.\n\nВведи <code>.pmbl</code> для активации защиты,"
-            " <code>.pmblsett</code> для ее настройки и <code>.pmbanlast</code> если"
+            " настройкам.\n\nВведи <code>pmbl</code> для активации защиты,"
+            " <code>pmblsett</code> для ее настройки и <code>pmbanlast</code> если"
             " нужно очистить уже прошедший рейд на личные сообщения."
         ),
         "removing": (
