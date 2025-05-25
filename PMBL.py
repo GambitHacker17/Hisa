@@ -42,8 +42,8 @@ class PMBLMod(loader.Module):
         "banned": (
             "😃 <b>Hey there"
             " •ᴗ•</b>\n<b>Unit «SIGMA»<b>, the <b>guardian</b> of this account. You are"
-            " <b>not approved</b>! You can contact my owner <b>in chat</b>, if you need"
-            " help.\n<b>I need to ban you in terms of security</b>"
+            " <b>not approved</b>! You can contact my owner <b>in chat</b>."
+            "\n<b>I need to ban you in terms of security</b>"
         ),
         "removing": (
             "<emoji document_id=5456529570431770384>🚮</emoji> <b>Removing {} last"
@@ -91,12 +91,12 @@ class PMBLMod(loader.Module):
         "banned": (
             "😃 <b>Добрый день"
             " •ᴗ•</b>\n<b>Юнит «SIGMA»<b>, <b>защитник</b> этого аккаунта. Вы <b>не"
-            " потверждены</b>! Вы можете связаться с моим владельцем <b>в чате</b>,"
-            " если нужна помощь.\n<b>Я вынужден заблокировать вас из соображений"
+            " потверждены</b>! Вы можете связаться с моим владельцем <b>в чате</b>."
+            "\n<b>Я вынужден заблокировать вас из соображений"
             " безопасности</b>"
         ),
         "hello": (
-            "🔏 <b>Юнит «SIGMA»</b> защищает твои личные сообщенния от неизвестных"
+            "🔏 <b>Юнит «SIGMA»</b> защищает твои личные сообщения от неизвестных"
             " пользователей. Он будет блокировать всех, кто не соответствует"
             " настройкам.\n\nВведи <code>.pmbl</code> для активации защиты,"
             " <code>.pmblsett</code> для ее настройки и <code>.pmbanlast</code> если"
@@ -160,7 +160,7 @@ class PMBLMod(loader.Module):
             ),
             loader.ConfigValue(
                 "photo",
-                "https://github.com/hikariatama/assets/raw/master/unit_sigma.png",
+                "https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/unit_sigma.png",
                 lambda: "Photo, which is sent along with banned notification",
                 validator=loader.validators.Link(),
             ),
