@@ -1,5 +1,10 @@
 import hisapyro
 import hisatl
+import typing
+import time
+import os
+import contextlib
+import logging
 from hisatl.extensions.html import CUSTOM_EMOJIS
 from hisatl.tl.types import Message
 
@@ -15,6 +20,9 @@ class CoreMod(loader.Module):
 
     async def _canceled_clear(self, call: InlineCall):
         await call.edit(self.strings("dbclearcan"), reply_markup=None)
+
+    async def _canceled_restart(self, call: InlineCall):
+        await call.edit(self.strings("restartcancel"), reply_markup=None)
 
     async def blacklistcommon(self, message: Message):
         args = utils.get_args(message)
@@ -252,8 +260,93 @@ class CoreMod(loader.Module):
         ru_doc="Перезагрузить юзербота",
         en_doc="Restart the userbot"
     )
-    async def restartcmd(self, message: Message):
-        await restart()
+    async def restart(self, message: Message):
+        args = utils.get_args_raw(message)
+        secure_boot = any(trigger in args for trigger in {"--secure-boot", "-sb"})
+        try:
+            if (
+                "-f" in args
+                or not self.inline.init_complete
+                or not await self.inline.form(
+                    message=message,
+                    text=self.strings(
+                        "secure_boot_confirm" if secure_boot else "restart_confirm"
+                    ),
+                    reply_markup=[
+                        {
+                            "text": self.strings("btn_restart"),
+                            "callback": self.inline_restart,
+                            "args": (secure_boot,),
+                        },
+                        {"text": self.strings("cancel"), "callback": self._canceled_restart,},
+                    ],
+                )
+            ):
+                raise
+        except Exception:
+            await self.restart_common(message, secure_boot)
+
+    async def process_restart_message(self, msg_obj: typing.Union[InlineCall, Message]):
+        self.set(
+            "selfupdatemsg",
+            (
+                msg_obj.inline_message_id
+                if hasattr(msg_obj, "inline_message_id")
+                else f"{utils.get_chat_id(msg_obj)}:{msg_obj.id}"
+            ),
+        )
+
+    async def inline_restart(self, call: InlineCall, secure_boot: bool = False):
+        await self.restart_common(call, secure_boot=secure_boot)
+
+    async def restart_common(
+        self,
+        msg_obj: typing.Union[InlineCall, Message],
+        secure_boot: bool = False,
+    ):
+        if (
+            hasattr(msg_obj, "form")
+            and isinstance(msg_obj.form, dict)
+            and "uid" in msg_obj.form
+            and msg_obj.form["uid"] in self.inline._units
+            and "message" in self.inline._units[msg_obj.form["uid"]]
+        ):
+            message = self.inline._units[msg_obj.form["uid"]]["message"]
+        else:
+            message = msg_obj
+
+        if secure_boot:
+            self._db.set(loader.__name__, "secure_boot", True)
+
+        msg_obj = await utils.answer(
+            msg_obj,
+            self.strings("restarting_caption").format(
+                "Hisa"
+            ),
+        )
+
+        await self.process_restart_message(msg_obj)
+
+        self.set("restart_ts", time.time())
+
+        await self._db.remote_force_save()
+
+        if "LAVHOST" in os.environ:
+            os.system("lavhost restart")
+            return
+
+        with contextlib.suppress(Exception):
+            await main.hisa.web.stop()
+
+        handler = logging.getLogger().handlers[0]
+        handler.setLevel(logging.CRITICAL)
+
+        for client in self.allclients:
+            if client is not message.client:
+                await client.disconnect()
+
+        await message.client.disconnect()
+        restart()
 
     @loader.command()
     async def cleardb(self, message: Message):
