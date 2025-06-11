@@ -309,7 +309,7 @@ class AIModule (loader .Module ):
 
     async def send_request_to_api (self ,message ,instructions ,request_text ,model ="gpt-4o-mini"):
         """Отправляет запрос к API и возвращает ответ."""
-        api_url ="http://109.172.94.236:5001/Zetta/v1/models"if self .provider =="zetta"else "https://api.vysssotsky.ru/"
+        api_url ="http://109.172.94.236:5001/OnlySq-Zetta/v1/models"if self .provider =="zetta"else "https://api.vysssotsky.ru/"
 
         if self .provider =='devj':
             payload ={
@@ -336,7 +336,7 @@ class AIModule (loader .Module ):
                 await message .edit (f"⚠️ Ошибка при запросе к API: {e }")
 
         else :
-            api_url ="http://109.172.94.236:5001/Zetta/v1/models"
+            api_url = "http://109.172.94.236:5001/OnlySq-Zetta/v1/models"
             payload ={
             "model":self .default_model ,
             "request":{
@@ -395,21 +395,21 @@ class AIModule (loader .Module ):
     async def zimgcmd(self, message):
         """Генерация изображений\nИспользование: .zimg <запрос>"""
         import os
-    
+
         args = utils.get_args_raw(message)
-    
+
         if not args:
             await message.edit("🤔 <b>Укажите запрос для генерации изображения.</b>")
             return
-    
+
         if args == "list":
             model_list = "\n".join([f"<b>{k}.</b> {v}" for k, v in available_image_models.items()])
             await message.edit(f"🖼 <b>Доступные модели:</b>\n{model_list}")
             return
-    
+
         model = self.default_image_model
         prompt_parts = args.split(" ", 1)
-    
+
         if len(prompt_parts) > 1 and prompt_parts[0] in available_image_models:
             model = available_image_models[prompt_parts[0]]
             prompt = prompt_parts[1]
@@ -469,13 +469,13 @@ class AIModule (loader .Module ):
     async def imgmodelcmd(self, message):
         """Установить модель для изображений\nИспользование: .imgmodel [номер/название]"""
         args = utils.get_args_raw(message)
-        
+
         if not args:
             current = f"Текущая модель: {self.default_image_model}"
             model_list = "\n".join([f"<b>{k}.</b> {v}" for k, v in available_image_models.items()])
             await message.edit(f"🎨 <b>{current}</b>\n\n🖼 <b>Доступные модели:</b>\n{model_list}")
             return
-        
+
         if args in available_image_models:
             self.default_image_model = available_image_models[args]
             await message.edit(f"✅ <b>Установлена модель:</b> {self.default_image_model}")
@@ -733,7 +733,7 @@ class AIModule (loader .Module ):
         """
         Обрабатывает запрос к новому API для улучшения запроса.
         """
-        api_url ="http://109.172.94.236:5001/Zetta/v1/models"
+        api_url = "http://109.172.94.236:5001/OnlySq-Zetta/v1/models"
         chat_id =str (message .chat_id )
 
         payload ={
@@ -791,7 +791,7 @@ class AIModule (loader .Module ):
         """
         Обрабатывает запрос к API модели ИИ для .aicmd.
         """
-        api_url = "http://109.172.94.236:5001/Zetta/v1/models"
+        api_url = "http://109.172.94.236:5001/OnlySq-Zetta/v1/models"
         chat_id = str(message.chat_id)
         current_role = self.role.get(chat_id, ".")
 
@@ -938,7 +938,7 @@ class AIModule (loader .Module ):
 
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.post("http://109.172.94.236:5001/Zetta/v1/models", json=payload) as response:
+                async with session.post("http://109.172.94.236:5001/OnlySq-Zetta/v1/models", json=payload) as response:
                     response.raise_for_status()
                     data = await response.json()
                     answer = data.get("answer", "🚫 Ответ не получен.").strip()
