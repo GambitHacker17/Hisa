@@ -27,7 +27,7 @@ class Quickstart(loader.Module):
             [
                 {
                     "text": self.strings("btn_support"),
-                    "url": "https://t.me/hisa_talks",
+                    "url": "https://t.me/Hisa_support",
                 }
             ],
         ] + utils.chunks(
