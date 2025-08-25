@@ -5,7 +5,7 @@ import telethon as tl
 from .. import loader, utils
 
 @loader.tds
-class dep(loader.Module):
+class Dep(loader.Module):
     """Депни всё что хочешь"""
 
     strings = {
