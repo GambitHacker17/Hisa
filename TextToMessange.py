@@ -1,3 +1,5 @@
+#meta developer: @MartyyyK
+
 import random
 import asyncio
 
