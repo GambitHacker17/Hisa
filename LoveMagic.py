@@ -26,7 +26,7 @@ class ILYMod(loader.Module):
 
     strings_ru = {
         "message": "<b>❤️‍🔥 Я хочу тебе сказать кое-что...</b>\n<i>{}</i>",
-        "_cls_doc": "Анимация сердечек",
+        "_cls_doc": "Анимация из сердечек",
     }
 
     async def client_ready(self):
@@ -113,7 +113,7 @@ class ILYMod(loader.Module):
             disable_security=True,
         )
 
-    @loader.command(ru_doc="Отправить анимацию сердечек")
+    @loader.command(ru_doc="Отправить анимацию из сердечек")
     async def ily(self, message: Message):
         """Send message with animated hearts"""
         await self.ily_handler(
