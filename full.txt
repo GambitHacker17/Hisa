@@ -44,3 +44,4 @@ AutoReact
 Dep
 TextToMessange
 BirthdayTime
+LoveMagic
