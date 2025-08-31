@@ -45,3 +45,4 @@ Dep
 TextToMessange
 BirthdayTime
 LoveMagic
+VideoToCircle
