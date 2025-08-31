@@ -46,3 +46,4 @@ TextToMessange
 BirthdayTime
 LoveMagic
 VideoToCircle
+HisaFramework
