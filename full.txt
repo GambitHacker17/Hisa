@@ -47,3 +47,4 @@ BirthdayTime
 LoveMagic
 VideoToCircle
 HisaFramework
+VirtualKeyboard
