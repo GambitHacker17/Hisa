@@ -1,0 +1,38 @@
+
+from io import BytesIO 
+
+from hisapyro .raw .core .primitives import Int ,Long ,Int128 ,Int256 ,Bool ,Bytes ,String ,Double ,Vector 
+from hisapyro .raw .core import TLObject 
+from hisapyro import raw 
+from typing import List ,Optional ,Any 
+
+class TextAnchor (TLObject ):
+    """"""
+
+    __slots__ :List [str ]=["text","name"]
+
+    ID =0x35553762 
+    QUALNAME ="types.TextAnchor"
+
+    def __init__ (self ,*,text :"raw.base.RichText",name :str )->None :
+        self .text =text 
+        self .name =name 
+
+    @staticmethod 
+    def read (b :BytesIO ,*args :Any )->"TextAnchor":
+
+        text =TLObject .read (b )
+
+        name =String .read (b )
+
+        return TextAnchor (text =text ,name =name )
+
+    def write (self ,*args )->bytes :
+        b =BytesIO ()
+        b .write (Int (self .ID ,False ))
+
+        b .write (self .text .write ())
+
+        b .write (String (self .name ))
+
+        return b .getvalue ()
