@@ -11,10 +11,8 @@ from .. import loader, utils
 
 logger = logging.getLogger(__name__)
 
-
 def hash_msg(message):
     return f"{str(utils.get_chat_id(message))}/{str(message.id)}"
-
 
 async def read_stream(func: callable, stream, delay: float):
     last_task = None
@@ -35,11 +33,9 @@ async def read_stream(func: callable, stream, delay: float):
 
         last_task = asyncio.ensure_future(sleep_for_task(func, data, delay))
 
-
 async def sleep_for_task(func: callable, data: bytes, delay: float):
     await asyncio.sleep(delay)
     await func(data.decode())
-
 
 class MessageEditor:
     def __init__(
@@ -75,9 +71,15 @@ class MessageEditor:
             text += self.strings("finished").format(utils.escape_html(str(self.rc)))
 
         text += self.strings("stdout")
-        text += utils.escape_html(self.stdout[max(len(self.stdout) - 2048, 0) :])
-        stderr = utils.escape_html(self.stderr[max(len(self.stderr) - 1024, 0) :])
-        text += (self.strings("stderr") + stderr) if stderr else ""
+
+        stdout_content = utils.escape_html(self.stdout[max(len(self.stdout) - 2048, 0) :])
+        text += f"<blockquote>{stdout_content}</blockquote>"
+        
+        stderr_content = utils.escape_html(self.stderr[max(len(self.stderr) - 1024, 0) :])
+        if stderr_content:
+            text += self.strings("stderr")
+            text += f"<blockquote>{stderr_content}</blockquote>"
+        
         text += self.strings("end")
 
         with contextlib.suppress(hisatl.errors.rpcerrorlist.MessageNotModifiedError):
@@ -94,7 +96,6 @@ class MessageEditor:
 
     def update_process(self, process):
         pass
-
 
 class SudoMessageEditor(MessageEditor):
     PASS_REQ = "[sudo] password for"
@@ -208,7 +209,6 @@ class SudoMessageEditor(MessageEditor):
                 message.message.message.split("\n", 1)[0].encode() + b"\n"
             )
 
-
 class RawMessageEditor(SudoMessageEditor):
     def __init__(
         self,
@@ -260,7 +260,6 @@ class RawMessageEditor(SudoMessageEditor):
                 logger.error(e)
                 logger.error(text)
 
-
 @loader.tds
 class TerminalMod(loader.Module):
     """Runs commands"""
@@ -281,6 +280,14 @@ class TerminalMod(loader.Module):
     @loader.command()
     async def terminalcmd(self, message):
         await self.run_command(message, utils.get_args_raw(message))
+
+    @loader.command()
+    async def pipcmd(self, message):
+        await self.run_command(
+            message,
+            ("pip " if os.geteuid() == 0 else "sudo -S pip ")
+            + utils.get_args_raw(message)
+            )
 
     @loader.command()
     async def aptcmd(self, message):
