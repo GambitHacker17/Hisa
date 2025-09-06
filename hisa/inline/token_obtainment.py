@@ -66,7 +66,7 @@ class TokenObtainment(InlineUnit):
             try:
                 await fw_protect()
                 from .. import main
-                m = await conv.send_file("https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/Hisa.png")
+                m = await conv.send_file(main.BASE_PATH / "assets" / "Hisa.png")
                 r = await conv.get_response()
 
                 logger.debug(">> <Photo>")
@@ -198,7 +198,9 @@ class TokenObtainment(InlineUnit):
                     try:
                         await fw_protect()
                         from .. import main
-                        m = await conv.send_file("https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/Hisa.png")
+                        m = await conv.send_file(
+                            main.BASE_PATH / "assets" / "Hisa.png"
+                        )
                         r = await conv.get_response()
 
                         logger.debug(">> <Photo>")
