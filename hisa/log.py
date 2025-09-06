@@ -516,7 +516,7 @@ def init():
     )
     logging.getLogger().setLevel(logging.NOTSET)
     logging.getLogger("hisatl").setLevel(logging.WARNING)
-    logging.getLogger("hisapyro").setLevel(logging.WARNING)
+    logging.getLogger("pyrogram").setLevel(logging.WARNING)
     logging.getLogger("matplotlib").setLevel(logging.WARNING)
     logging.getLogger("aiohttp").setLevel(logging.WARNING)
     logging.getLogger("aiogram").setLevel(logging.WARNING)
