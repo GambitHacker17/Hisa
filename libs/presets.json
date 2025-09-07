@@ -1,0 +1,19 @@
+{
+    "fun": [
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/aniquotes.py",
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/artai.py",
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/inline_ghoul.py"
+    ],
+    "chat": [
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/activists.py",
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/banstickers.py"
+    ],
+    "service": [
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/account_switcher.py",
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/surl.py"
+    ],
+    "downloaders": [
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/uploader.py",
+        "https://github.com/amm1edev/ame_repo/raw/refs/heads/main/porn.py"
+    ]
+}
