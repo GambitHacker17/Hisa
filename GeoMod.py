@@ -56,4 +56,4 @@ class GeoMod(loader.Module):
             )
             await message.delete()
         else:
-            await utils.answer(message, "<b>Координаты не найдены.</b>")
+            await utils.answer(message, "<b>Координаты не найдены</b>")
