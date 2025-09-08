@@ -44,7 +44,7 @@ class MusicDLMod(loader.Module):
     async def client_ready(self, client, db):
         self._client = client
 
-    @loader.command(ru_doc="<название> - Скачать песню")
+    @loader.command(ru_doc="<название> - cкачать песню")
     async def mdl(self, message: Message):
         args = utils.get_args_raw(message)
         if not args:
@@ -114,7 +114,7 @@ class MusicDLMod(loader.Module):
                                 and (
                                     not getattr(event.message, "reply_markup", None)
                                     or all(
-                                        button.text != "Подождите, трек скоро скачается."
+                                        button.text != "Трек скоро скачается."
                                         for button in utils.array_sum(
                                             [row.buttons for row in event.message.reply_markup.rows]
                                         )
