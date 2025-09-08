@@ -14,7 +14,6 @@ from ..inline.types import InlineCall
 
 logger = logging.getLogger(__name__)
 
-
 @loader.tds
 class ILYMod(loader.Module):
     """Hearts animation"""
@@ -97,9 +96,9 @@ class ILYMod(loader.Module):
             )
             await obj.unload()
 
-    @loader.command(ru_doc="Анимация из сердечек в инлайне")
+    @loader.command(ru_doc="- анимация из сердечек в инлайне")
     async def ilyicmd(self, message: Message):
-        """Send inline message with animated hearts"""
+        """- send inline message with animated hearts"""
         args = utils.get_args_raw(message)
         await self.inline.form(
             self.strings("message").format("*" * (len(args) or 9)),
@@ -113,9 +112,9 @@ class ILYMod(loader.Module):
             disable_security=True,
         )
 
-    @loader.command(ru_doc="Анимация из сердечек")
+    @loader.command(ru_doc="- анимация из сердечек")
     async def ily(self, message: Message):
-        """Send message with animated hearts"""
+        """- send message with animated hearts"""
         await self.ily_handler(
             message,
             utils.get_args_raw(message) or "I ❤️ you!",
