@@ -8,9 +8,9 @@ from .. import loader, utils
 class NeofetchMod(loader.Module):
     """Показать информацию об ОС"""
     strings = {"name": "Neofetch"}
-    
+
     async def neofetchcmd(self, message):
-        """запустить Neofetch"""
+        """- запустить Neofetch"""
         try:
             try:
                 subprocess.run(["which", "neofetch"], check=True, capture_output=True)
