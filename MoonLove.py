@@ -25,9 +25,9 @@ class MoonLoveMod(loader.Module):
 
     strings = {"name": "MoonLove"}
     strings_ru = {
-        "_cls_doc": "Анимация с лунами и сердечками для любимой",
-        "_cmd_doc_moonlove": "[текст] - Люблю тебя невообразимо",
-        "_cmd_doc_moonlovei": "[текст] - Люблю тебя невообразимо (инлайн)",
+        "_cls_doc": "Анимация с лунами и сердечками",
+        "_cmd_doc_moonlove": "<текст> - люблю тебя невообразимо",
+        "_cmd_doc_moonlovei": "<текст> - люблю тебя невообразимо (инлайн)",
     }
 
     async def moonlovecmd(self, message: Message):
