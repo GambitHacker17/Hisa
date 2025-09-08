@@ -11,7 +11,7 @@ class SearchPic(loader.Module):
 
     @loader.unrestricted
     async def spiccmd(self, message: Message):
-        """Поиск изображения\nИспользование: .spic <запрос>"""
+        """<запрос> - найти изображение"""
         args = utils.get_args_raw(message)
         if not args:
             await utils.answer(message, "❌ Укажите поисковый запрос")
@@ -20,7 +20,7 @@ class SearchPic(loader.Module):
         try:
             query = urllib.parse.quote_plus(args)
             image_url = f"https://yandex.uz/images/touch/search/?text={query}"
-            
+
             await message.delete()
             await self.inline.form(
                 message=message,
