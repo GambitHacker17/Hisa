@@ -10,9 +10,8 @@ from base64 import b64encode, b64decode
 class base64Mod(loader.Module):
     """Кодирование и декодирование base64"""
     strings = {"name": "Base64"}
-    
+
     def extract_pure_base64(self, text: str) -> str:
-        """Извлекает чистый base64 текст, игнорируя всё остальное"""
         matches = re.findall(r'(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?', text)
         if matches:
             valid_matches = [m for m in matches if len(m) >= 3 and re.fullmatch(r'[A-Za-z0-9+/]+={0,2}', m)]
@@ -21,7 +20,6 @@ class base64Mod(loader.Module):
         return ""
 
     async def detect_file_type(self, data: bytes) -> tuple:
-        """Определяет тип файла по сигнатурам"""
         if data.startswith(b'\xFF\xD8'):
             return data, 'image/jpeg', '.jpg'
         elif data.startswith(b'\x89PNG'):
@@ -72,7 +70,7 @@ class base64Mod(loader.Module):
 
     @loader.owner
     async def b64encodecmd(self, message):
-        """<text/media or reply> - Закодировать в base64"""
+        """<text/media or reply> - закодировать в base64"""
         reply = await message.get_reply_message()
         mtext = utils.get_args_raw(message)
         try:
@@ -105,13 +103,13 @@ class base64Mod(loader.Module):
                 await message.delete()
             else:
                 await message.edit(f"<b>🔐 Base64:</b>\n<code>{str(output, 'utf-8')}</code>")
-                
+
         except Exception as e:
             await message.edit(f"<b>❌ Ошибка кодирования:</b>\n<code>{str(e)}</code>")
 
     @loader.owner
     async def b64decodecmd(self, message):
-        """<text or reply to text/file> - Декодировать из base64"""
+        """<text or reply to text/file> - декодировать из base64"""
         reply = await message.get_reply_message()
         mtext = utils.get_args_raw(message)
         try:
@@ -176,6 +174,6 @@ class base64Mod(loader.Module):
                     caption=f"<b>📦 Декодированный файл</b>"
                 )
                 await message.delete()
-                
+
         except Exception as e:
             await message.edit(f"<b>❌ Ошибка декодирования:</b>\n<code>{str(e)}</code>")
