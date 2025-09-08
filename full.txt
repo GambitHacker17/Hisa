@@ -51,3 +51,4 @@ VirtualKeyboard
 BirthdayWish
 DND
 RPmod
+GeoMod
