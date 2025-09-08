@@ -12,7 +12,6 @@ from ..inline.types import BotMessage
 
 logger = logging.getLogger(__name__)
 
-
 @loader.tds
 class Declaration(loader.Module):
     """Declare love with your Hisa bot"""
@@ -78,9 +77,9 @@ class Declaration(loader.Module):
     async def client_ready(self):
         self.ids = self.pointer("declarations", {})
 
-    @loader.command(ru_doc="Признаться в любви")
+    @loader.command(ru_doc="- признаться в любви")
     async def declare(self, message: Message):
-        """Declare love"""
+        """- declare love"""
         if not message.is_private:
             await utils.answer(message, self.strings("not_private"))
             return
