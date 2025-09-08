@@ -35,9 +35,9 @@ class SecretMessageMod(loader.Module):
         self.db = db
         self._oppened_messages = []
 
-    @loader.inline_handler(ru_doc="Секретное сообщение для пользователя")
+    @loader.inline_handler(ru_doc="- секретное сообщение для пользователя")
     async def whisper(self, query: InlineQuery):
-        """Secret message for a user"""
+        """- secret message for a user"""
         if len(query.args.split()) > 1:
             try:
                 if query.args.split()[0].isdigit():
