@@ -4,7 +4,6 @@ from telethon.tl.types import Message
 
 from .. import loader, utils
 
-
 @loader.tds
 class InlineFunMod(loader.Module):
     """Create Fun quotes"""
@@ -25,7 +24,7 @@ class InlineFunMod(loader.Module):
     }
 
     async def twitcmd(self, message: Message):
-        """<text> - Create Twitter message quote"""
+        """<text> - стикер с постом Твиттера"""
         text = utils.get_args_raw(message)
         if not text:
             await message.edit(self.strings("where_text"))
@@ -44,7 +43,7 @@ class InlineFunMod(loader.Module):
             await message.delete()
 
     async def frogcmd(self, message: Message):
-        """<text> - Create Frog text quote"""
+        """<text> - стикер с лягушкой"""
         text = utils.get_args_raw(message)
         if not text:
             await message.edit(self.strings("where_text"))
@@ -60,4 +59,4 @@ class InlineFunMod(loader.Module):
             return
 
         if message.out:
-            await message.delete()         
+            await message.delete()
