@@ -8,7 +8,6 @@ from telethon.utils import get_display_name
 
 from .. import loader, utils
 
-
 @loader.tds
 class ActivistsMod(loader.Module):
 
@@ -38,7 +37,7 @@ class ActivistsMod(loader.Module):
             " пользователи в чате:</b>\n\n{}\n<i>Подсчет занял: {}s</i>"
         ),
         "_cmd_doc_activists": (
-            "[количество] [-m <int>] - Найти наиболее активных пользователей чата"
+            "<кол-во> - Найти самых активных пользователей чата"
         ),
         "_cls_doc": "Ищет наиболее активных пользователей чата",
     }
