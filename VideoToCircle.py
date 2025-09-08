@@ -15,7 +15,7 @@ class VideoToCircle(loader.Module):
         await yummy(client)
 
     async def vtccmd(self, message):
-        """<reply to video> конвертировать видео в кружок"""
+        """<reply to video> - конвертировать видео"""
         reply = await message.get_reply_message()
         if not reply or not reply.video:
             await message.edit("<b><emoji document_id=5210952531676504517>❌</emoji> Ответьте на видео для конвертации в кружок 🎥</b>")
@@ -37,7 +37,6 @@ class VideoToCircle(loader.Module):
         await message.delete()
 
     async def crop_to_square(self, video):
-        """Обрезать видео до квадратного формата (1:1) с помощью ffmpeg"""
         square_video = f"{video}_square.mp4"
         command = (
             f"ffmpeg -i {video} -vf \"crop='min(in_w,in_h)':'min(in_w,in_h)':'(in_w-out_w)/2':'(in_h-out_h)/2'\" -c:a copy {square_video}"
