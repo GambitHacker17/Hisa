@@ -22,7 +22,7 @@ class VirtualKeyboardMod(loader.Module):
         self.current_layout = {}
         self.caps_lock = {}
 
-    @loader.command(ru_doc="Показать виртуальную клавиатуру")
+    @loader.command(ru_doc="- показать виртуальную клавиатуру")
     async def keyb(self, message: Message):
         chat_id = str(message.chat_id)
         if chat_id not in self.current_text:
@@ -36,7 +36,7 @@ class VirtualKeyboardMod(loader.Module):
             reply_markup=self.generate_keyboard(chat_id),
         )
 
-    @loader.command(ru_doc="Показать помощь")
+    @loader.command(ru_doc="- показать помощь")
     async def keybhelp(self, message: Message):
         await utils.answer(message, self.strings["help_text"])
 
