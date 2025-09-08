@@ -22,7 +22,7 @@ class AutoReactMod(loader.Module):
             "current_reaction",
             "👍",
             "Текущая реакция (эмодзи или ID)",
-            
+
             "is_premium",
             False,
             "Является ли реакция Premium эмодзи"
@@ -41,29 +41,29 @@ class AutoReactMod(loader.Module):
         self.set("active_chats", self.active_chats)
         self.set("all_pm", self.all_pm)
 
-    @loader.command(ru_doc="Включить/выключить автореакции в текущем чате")
+    @loader.command(ru_doc="- вкл/выкл автореакции в текущем чате")
     async def artoggle(self, message):
         chat_id = str(message.chat_id)
 
         if self.all_pm:
             self.all_pm = False
             await utils.answer(message, self.strings["all_pm_disabled"])
-        
+
         if chat_id in self.active_chats:
             del self.active_chats[chat_id]
             status = False
         else:
             self.active_chats[chat_id] = True
             status = True
-            
+
         self.save_active_chats()
-        
+
         await utils.answer(
             message,
             self.strings["enabled"] if status else self.strings["disabled"]
         )
 
-    @loader.command(ru_doc="Включить/выключить автореакции во всех личных чатах")
+    @loader.command(ru_doc="- вкл/выкл автореакции во всех чатах")
     async def arallpm(self, message):
         """Toggle auto-reactions in all private messages"""
         self.all_pm = not self.all_pm
