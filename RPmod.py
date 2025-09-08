@@ -126,11 +126,11 @@ class RPMod(loader.Module):
                 dict_rp[key_rp] = value_rp
                 self.db.set('RPMod', 'rpcomands', dict_rp)
                 self.db.set('RPMod', 'rpemoji', dict_emoji_rp)
-                await utils.answer(message, f'<b>Команda \'<code>{key_rp}</code>\' успешно добавлена с эмодзи \'{emoji_rp}\'</b>')
+                await utils.answer(message, f'<b>Командa \'<code>{key_rp}</code>\' успешно добавлена с эмодзи \'{emoji_rp}\'</b>')
             else:
                 dict_rp[key_rp] = value_rp
                 self.db.set('RPMod', 'rpcomands', dict_rp)
-                await utils.answer(message, f'<b>Команda \'<code>{key_rp}</code>\' успешно добавлена</b>')
+                await utils.answer(message, f'<b>Командa \'<code>{key_rp}</code>\' успешно добавлена</b>')
         except:
             await utils.answer(message, '<b>Вы не ввели разделитель /</b>')
 
