@@ -52,3 +52,4 @@ BirthdayWish
 DND
 RPmod
 GeoMod
+ImageCut
