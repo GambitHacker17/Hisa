@@ -7,7 +7,7 @@ from telethon.utils import get_display_name
 
 class RPSgameMod(loader.Module):
     """Game «rock, paper, scissors» in Telegram"""
-    
+
     strings = {
         "name": "RPSgame",
         "searching": "<b>✌️ The game «Rock, Paper, Scissors»</b>",
@@ -28,7 +28,7 @@ class RPSgameMod(loader.Module):
         "paper": "📄 Paper",
         "random": "🎲 Random choice",
     }
-    
+
     strings_ru = {
         "searching": "<b>✌️ Игра «Камень, ножницы, бумага»</b>",
         "join_game": "👾 Присоединиться к игре",
@@ -54,16 +54,16 @@ class RPSgameMod(loader.Module):
         self.last_click_time = {}
 
     @loader.command(
-        ru_doc="- Начать игру «Камень, ножницы, бумага»",
+        ru_doc="- начать игру",
         alias="rps"
     )
     async def sgamerps(self, message):
-        """- Start the game «Rock, Paper, Scissors»"""
+        """- start the game"""
         chat_id = message.chat_id
         player1_id = message.sender_id
         game_id = f"{chat_id}_{player1_id}"
         prefix = utils.escape_html(self.get_prefix())
-        
+
         if game_id in self.games:
             await utils.answer(message, self.strings["game_already_running"].format(prefix))
             return
@@ -85,11 +85,11 @@ class RPSgameMod(loader.Module):
             ],
             disable_security=True,
         )
-        
+
     async def join_game(self, call, game_id: str):
         game = self.games.get(game_id)
         player2_id = call.from_user.id
-        
+
         current_time = time.time()
         if player2_id in self.last_click_time and current_time - self.last_click_time[player2_id] < 3:
             await call.answer(self.strings["cooldown"])
@@ -127,7 +127,7 @@ class RPSgameMod(loader.Module):
     async def make_choice(self, call, game_id: str, choice: str):
         game = self.games.get(game_id)
         current_time = time.time()
-       
+
         if call.from_user.id in self.last_click_time and current_time - self.last_click_time[call.from_user.id] < 2:
             await call.answer(self.strings["cooldown"])
             return
@@ -214,17 +214,17 @@ class RPSgameMod(loader.Module):
             )
 
         await call.edit(text=result_message)
-        
+
         del self.games[game_id]
-        
+
     async def call_del(self, call):
         await call.delete()
-        
+
     @loader.command(
-        ru_doc=f"- Завершить все активные игры.",
+        ru_doc=f"- завершить все активные игры",
         alias="clg"
     )
     async def cleargames(self, message):
-        """- Complete all running games."""
+        """- complete all running games"""
         self.games.clear()
         await utils.answer(message, self.strings["games_cleared"])
