@@ -20,7 +20,7 @@ class InlineButtons(loader.Module):
         return buttons
 
     @loader.command(
-        ru_doc="помощь по командам",
+        ru_doc="- помощь по командам",
     )
     async def cinlinehelp(self, message: Message):
         """help for commands"""
@@ -35,7 +35,7 @@ class InlineButtons(loader.Module):
 <code>cinlinegif</code> <ссылка на GIF>, <текст кнопки>, <ссылка кнопки>, <текст сообщения> - Сообщение с GIF и одной кнопкой\n
 <code>cinlinegifmulti</code> <ссылка на GIF>, <текст1:ссылка1|текст2:ссылка2|...>, <текст сообщения> - Сообщение с GIF и несколькими кнопками\n
 <code>cinlinehelp</code> - Показать эту справку"""
-        
+
         await utils.answer(message, help_text)
 
     async def check_args(self, message: Message, expected: int, command: str):
@@ -54,7 +54,7 @@ class InlineButtons(loader.Module):
         """<button text>, <button link>, <message text>"""
         if not await self.check_args(message, 3, "cinline"):
             return
-            
+
         args = utils.get_args_raw(message).split(", ", maxsplit=2)
         btn_text, btn_link, text = args
 
@@ -71,7 +71,7 @@ class InlineButtons(loader.Module):
         """<text1:link1|text2:link2|...>, <message text>"""
         if not await self.check_args(message, 2, "cinlinemulti"):
             return
-            
+
         args = utils.get_args_raw(message).split(", ", maxsplit=1)
         buttons_str, text = args
         buttons = await self.parse_buttons(buttons_str)
@@ -89,7 +89,7 @@ class InlineButtons(loader.Module):
         """<image link>, <text1:link1|text2:link2>, <message text>"""
         if not await self.check_args(message, 3, "cinlinephotomulti"):
             return
-            
+
         args = utils.get_args_raw(message).split(", ", maxsplit=2)
         image_link, buttons_str, text = args
         buttons = await self.parse_buttons(buttons_str)
@@ -109,7 +109,7 @@ class InlineButtons(loader.Module):
         """<video link>, <text1:link1|text2:link2>, <message text>"""
         if not await self.check_args(message, 3, "cinlinevideomulti"):
             return
-            
+
         args = utils.get_args_raw(message).split(", ", maxsplit=2)
         video_link, buttons_str, text = args
         buttons = await self.parse_buttons(buttons_str)
@@ -129,7 +129,7 @@ class InlineButtons(loader.Module):
         """<gif link>, <text1:link1|text2:link2>, <message text>"""
         if not await self.check_args(message, 3, "cinlinegifmulti"):
             return
-            
+
         args = utils.get_args_raw(message).split(", ", maxsplit=2)
         gif_link, buttons_str, text = args
         buttons = await self.parse_buttons(buttons_str)
@@ -149,7 +149,7 @@ class InlineButtons(loader.Module):
         """<image link>, <button text>, <button link>, <message text>"""
         if not await self.check_args(message, 4, "cinlinephoto"):
             return
-            
+
         args = utils.get_args_raw(message).split(", ", maxsplit=3)
         image_link, btn_text, btn_link, text = args
 
@@ -168,7 +168,7 @@ class InlineButtons(loader.Module):
         """<video link>, <button text>, <button link>, <message text>"""
         if not await self.check_args(message, 4, "cinlinevideo"):
             return
-            
+
         args = utils.get_args_raw(message).split(", ", maxsplit=3)
         video_link, btn_text, btn_link, text = args
 
@@ -187,7 +187,7 @@ class InlineButtons(loader.Module):
         """<gif link>, <button text>, <button link>, <message text>"""
         if not await self.check_args(message, 4, "cinlinegif"):
             return
-            
+
         args = utils.get_args_raw(message).split(", ", maxsplit=3)
         gif_link, btn_text, btn_link, text = args
 
