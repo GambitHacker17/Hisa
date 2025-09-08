@@ -10,7 +10,6 @@ from telethon.tl.types import Message
 
 from .. import loader, utils
 
-
 async def translate(text: str, target: str, proxy: dict) -> str:
     a = await utils.run_sync(
         requests.post,
@@ -75,7 +74,6 @@ async def translate(text: str, target: str, proxy: dict) -> str:
 
 logger = logging.getLogger(__name__)
 
-
 @loader.tds
 class DeepLMod(loader.Module):
 
@@ -92,54 +90,8 @@ class DeepLMod(loader.Module):
             "<emoji document_id=5312526098750252863>🚫</emoji> <b>Не указан текст</b>"
         ),
         "translated": "🇺🇸 <code>{}</code>",
-        "_cmd_doc_deepl": "<text or reply> - Перевести текст через DeepL",
+        "_cmd_doc_deepl": "<text or reply> - перевести текст через DeepL",
         "_cls_doc": "Переводит текст через DeepL. Рекомендуется использовать прокси",
-    }
-
-    strings_de = {
-        "no_text": (
-            "<emoji document_id=5312526098750252863>🚫</emoji> <b>Kein Text"
-            " angegeben</b>"
-        ),
-        "translated": "🇺🇸 <code>{}</code>",
-        "_cmd_doc_deepl": "<Text oder Antwort> - Übersetze Text über DeepL",
-        "_cls_doc": (
-            "Übersetzt Text über DeepL. Es wird empfohlen, einen Proxy zu verwenden"
-        ),
-    }
-
-    strings_uz = {
-        "no_text": (
-            "<emoji document_id=5312526098750252863>🚫</emoji> <b>Matn"
-            " ko'rsatilmadi</b>"
-        ),
-        "translated": "🇺🇸 <code>{}</code>",
-        "_cmd_doc_deepl": "<matn yoki javob> - DeepL orqali matnni tarjima qilish",
-        "_cls_doc": (
-            "DeepL orqali matnni tarjima qilish. Proxydan foydalanish maslahat beriladi"
-        ),
-    }
-
-    strings_hi = {
-        "no_text": (
-            "<emoji document_id=5312526098750252863>🚫</emoji> <b>कोई टेक्स्ट नहीं दिया"
-            " गया</b>"
-        ),
-        "translated": "🇺🇸 <code>{}</code>",
-        "_cmd_doc_deepl": "<टेक्स्ट या उत्तर> - डीपएल के माध्यम से पाठ का अनुवाद करें",
-        "_cls_doc": (
-            "डीपएल के माध्यम से पाठ का अनुवाद करता है। प्रॉक्सी का उपयोग करने की सलाह दी जाती है"
-        ),
-    }
-
-    strings_tr = {
-        "no_text": (
-            "<emoji document_id=5312526098750252863>🚫</emoji> <b>Metin"
-            " belirtilmedi</b>"
-        ),
-        "translated": "🇺🇸 <code>{}</code>",
-        "_cmd_doc_deepl": "<metin veya yanıt> - DeepL ile metni çevir",
-        "_cls_doc": "DeepL ile metni çevirir. Proxy kullanmanız önerilir",
     }
 
     def __init__(self):
