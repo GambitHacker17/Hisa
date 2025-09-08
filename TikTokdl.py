@@ -7,10 +7,9 @@ from pydub import AudioSegment
 from hisatl.types import Message
 from .. import loader, utils
 
-
 @loader.tds
 class tiktokModule(loader.Module):
-    """Скачать видео из TikTok по ссылке"""
+    """Скачать видео из TikTok"""
 
     strings = {
         'name': 'TikTokdlm',
@@ -42,7 +41,6 @@ class tiktokModule(loader.Module):
                 validator=loader.validators.String(),
             ),
         )
-
 
     async def api(self, url, session):
         api = 'https://downloader.bot/api/tiktok/info'
@@ -110,12 +108,12 @@ class tiktokModule(loader.Module):
 
         await mv.delete()
 
-    @loader.command(ru_doc='Скачать Музыку из видео')
+    @loader.command(ru_doc='- скачать музыку из видео')
     async def tm(self, message: Message):
         args = utils.get_args_raw(message)
         await self.download(message, args, 'music')
 
-    @loader.command(ru_doc='Скачать Видео')
+    @loader.command(ru_doc='- скачать видео')
     async def tt(self, message: Message):
         args = utils.get_args_raw(message)
         await self.download(message, args, 'video')
