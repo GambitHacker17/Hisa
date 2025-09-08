@@ -12,7 +12,7 @@ class Timer:
         self.started = {"white": False, "black": False}
         self.last_time = time.monotonic()
         self.t = None
-        
+
     async def count(self):
         while True:
             await asyncio.sleep(0.1)
@@ -186,7 +186,7 @@ class Chess(loader.Module):
                 ]
             ]
         )
-        
+
     async def time_handle(self, call, minutes, txt, nT):
         self.timeName = txt
         self.pTime = minutes*60 if minutes else None
@@ -222,19 +222,16 @@ class Chess(loader.Module):
 
     @loader.command() 
     async def chess(self, message):
-        """Предложить сыграть партию в шахматы (в лс автоматически с собеседником)"""
+        """- предложить сыграть в шахматы"""
         if self.board:
             await message.edit("<emoji document_id=5370724846936267183>🤔</emoji> Уже есть запущенная партия. Завершите или сбросьте её с <code>purgegame</code>")
             return
         await self.purgeSelf()
         self.message = message
         self.message_chat = message.chat_id
-        
-        # Автоматическое определение соперника в личных сообщениях
+
         if isinstance(message.peer_id, PeerUser):
-            # Это личные сообщения
             if message.out:
-                # Исходящее сообщение - соперник это получатель
                 self.opp_id = message.peer_id.user_id
                 try:
                     user = await self.client.get_entity(self.opp_id)
@@ -243,13 +240,11 @@ class Chess(loader.Module):
                     await message.edit("❌ Не удалось получить информацию о пользователе")
                     return
             else:
-                # Входящее сообщение - соперник это отправитель
                 self.opp_id = message.from_id.user_id
                 self.opp_name = (await message.get_sender()).first_name
-            
-            noTimer = False  # В лс можно играть с таймером
+
+            noTimer = False
         else:
-            # Это группа/канал - требуется указать соперника
             noTimer = True
             if message.is_reply:
                 r = await message.get_reply_message()
@@ -274,13 +269,13 @@ class Chess(loader.Module):
                 except:
                     await message.edit("❌ Нет такого пользователя")
                     return
-        
+
         if self.opp_id == self.message.sender_id:
             await message.edit("<emoji document_id=5384398004172102616>😈</emoji> Одиночные шахматы? Простите, нет")
             return
-        
+
         self.you_n_me = [self.opp_id, self.message.sender_id]
-        
+
         await self.inline.form(
             message = message, 
             text = f"<a href='tg://user?id={self.opp_id}'>{self.opp_name}</a> приглашен сыграть в шахматы\n-- --\n[⚙️] Текущие настройки:\n| - > • Хост играет за {self.colorName} цвет\n| - > • Время: {self.timeName}", 
@@ -299,7 +294,7 @@ class Chess(loader.Module):
 
     @loader.command() 
     async def purgeGame(self, message):
-        """завершить партию, очистив все связанные с ней данные"""
+        """- завершить партию"""
         await self.purgeSelf()
         await message.edit("Данные очищены")
 
@@ -326,7 +321,7 @@ class Chess(loader.Module):
                 self.brd = call
                 await asyncio.sleep(0.5)
             else:
-                self.game = True    
+                self.game = True
             await call.edit(text="[!] Для лучшего различия фигур включите светлую тему")
             await asyncio.sleep(2.5)
             await self.LoadBoard(text, call)
@@ -337,7 +332,7 @@ class Chess(loader.Module):
         if call.from_user.id not in self.you_n_me:
             await call.answer("Партия не ваша")
             return
-        await self.Timer.start()    
+        await self.Timer.start()
         self.time_message = call
         self.TimerLoop.start()
         self.loopState = True
@@ -392,7 +387,7 @@ class Chess(loader.Module):
                         else:
                             self.board[coord] = "×" if (move := next((chess.Move.from_uci(p) for p in self.places if p[2:4] == coord.lower()), None)) and self.Board.is_capture(move) else "●"
                         break
-                       
+
                     else:
                         piece = self.Board.piece_at(chess.parse_square(coord.lower()))
                         self.board[coord] =  self.style[piece.symbol()] if piece else " "
@@ -423,7 +418,7 @@ class Chess(loader.Module):
                         else:
                             self.board[coord] = "×" if (move := next((chess.Move.from_uci(p) for p in self.places if p[2:4] == coord.lower()), None)) and self.Board.is_capture(move) else "●"
                         break
-                       
+
                     else:
                         piece = self.Board.piece_at(chess.parse_square(coord.lower()))
                         self.board[coord] =  self.style[piece.symbol()] if piece else " "
@@ -454,7 +449,7 @@ class Chess(loader.Module):
             reply_markup = btns,
             disable_security = True
         )
-        
+
     async def are_u(s,c,p):
         current_player = s.message.sender_id if (s.you_play == "w") ^ s.reverse else s.opp_id
         if c.from_user.id != current_player:
@@ -472,7 +467,7 @@ class Chess(loader.Module):
             return
         if not self.game:
             await call.answer("Вы не запустили таймер")
-            return    
+            return
         current_player = self.message.sender_id if (self.you_play == "w") ^ self.reverse else self.opp_id
         if call.from_user.id != current_player:
             await call.answer("Нельзя использовать эти фигуры")
