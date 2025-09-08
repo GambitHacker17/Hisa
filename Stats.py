@@ -53,7 +53,7 @@ class Stats(loader.Module):
 
     @loader.command()
     async def stats(self, message):
-        """получить статистику"""
+        """- получить статистику"""
         await utils.answer(message, self.strings['loading_stats'])
         users = 0
         bots = 0
