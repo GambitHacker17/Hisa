@@ -4,9 +4,9 @@ import html
 from .. import loader, utils
 
 class ManageDB(loader.Module):
-    """Module to check and clean the database\nBe careful while using this module!"""
+    """Module to check and clean the database"""
     strings = {"name": "ManageDB",
-        "del_text": "<b>Choose a module to delete from the database</b>\n\n⚠ Be careful and do not delete the core modules",
+        "del_text": "<b>Choose a module to delete from the database</b>",
         "deleted": "Key {key} deleted from Database",
         "back_btn": "◀ Back",
         "del_btn": "❌ Delete",
@@ -14,7 +14,7 @@ class ManageDB(loader.Module):
     }
 
     strings_ru = {
-        "del_text": "<b>Выберите модуль для удаления из базы данных</b>\n\n⚠ Будьте осторожны и не удаляйте основные модули",
+        "del_text": "<b>Выберите модуль для удаления из базы данных</b>",
         "deleted": "Ключ {key} удален из базы данных",
         "back_btn": "◀ Назад",
         "del_btn": "❌ Очистить",
@@ -25,7 +25,6 @@ class ManageDB(loader.Module):
         self._current_page = 0
 
     async def delete_db(self, call, item):
-        """Clean db of the module"""
         if item[0] in self._db.keys():
             self._db.pop(f"{item[0]}")
             self._db.save()
@@ -45,7 +44,6 @@ class ManageDB(loader.Module):
         return False
 
     def generate_delete_markup(self, item, page_num):
-        """Generate markup for inline form"""
         self._current_page = page_num
         markup = [[]]
         markup[-1].append(
@@ -65,7 +63,6 @@ class ManageDB(loader.Module):
         return markup
 
     async def main_menu(self, message, page_num=0):
-        """Show main menu with specified page"""
         self._current_page = page_num
         await utils.answer(
             message,
@@ -74,7 +71,6 @@ class ManageDB(loader.Module):
         )
 
     def generate_info_all_markup(self, page_num=0):
-        """Generate markup for inline form with 3x3 grid and navigation buttons"""
         self._current_page = page_num
         items = list(self._db.items())
         markup = [[]]
@@ -118,13 +114,12 @@ class ManageDB(loader.Module):
         return markup
 
     async def change_page(self, call, page_num):
-        """Change to the specified page"""
         self._current_page = page_num
         await call.edit(self.strings("del_text"), reply_markup=self.generate_info_all_markup(page_num))
 
     @loader.command(
-        ru_doc="Посмотреть модуль в базе данных",
+        ru_doc="- посмотреть модуль в базе данных",
     )
     async def mydbcmd(self, message):
-        """Check the info of the modules"""
+        """- check the info of the modules"""
         await self.main_menu(message=message, page_num=0)
