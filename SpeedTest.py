@@ -13,7 +13,7 @@ class SpeedTestMod(loader.Module):
     strings = {
         "name": "SpeedTest",
         "_cls_doc": "Speed Test - Test your internet speed",
-        
+
         "testing_en": "🔄 <b>Testing speed...</b>",
         "testing_ru": "🔄 <b>Тестирование скорости...</b>",
 
@@ -65,9 +65,9 @@ class SpeedTestMod(loader.Module):
     def format_speed(self, bytes_per_sec):
         if bytes_per_sec <= 0:
             return "0 Mbps"
-            
+
         mbits = (bytes_per_sec * 8) / (1024 * 1024)
-        
+
         if mbits < 1:
             return f"{mbits * 1000:.1f} Kbps"
         return f"{mbits:.1f} Mbps"
@@ -75,23 +75,23 @@ class SpeedTestMod(loader.Module):
     def format_time(self, size_bytes, speed_bytes_per_sec):
         if speed_bytes_per_sec <= 0:
             return "∞"
-        
+
         seconds = size_bytes / speed_bytes_per_sec
-        
+
         if seconds < 1:
             return "< 1 sec"
-            
+
         if seconds < 60:
             return f"{seconds:.0f} sec"
-            
+
         minutes = seconds / 60
         if minutes < 60:
             return f"{minutes:.0f} min"
-            
+
         hours = minutes / 60
         if hours < 24:
             return f"{hours:.1f} h"
-            
+
         days = hours / 24
         return f"{days:.1f} d"
 
@@ -102,7 +102,7 @@ class SpeedTestMod(loader.Module):
             "https://cdn.speedcheck.org/tests/files/10mb.dat"
         ]
         speeds = []
-        
+
         for url in urls:
             try:
                 start = time.time()
@@ -118,7 +118,7 @@ class SpeedTestMod(loader.Module):
                     speeds.append(total / duration)
             except:
                 continue
-                
+
         return max(speeds) if speeds else 0
 
     async def upload_test(self, session):
@@ -155,11 +155,10 @@ class SpeedTestMod(loader.Module):
 
     @loader.command(
         ru_doc="- запустить тест скорости интернета",
-        en_doc="- start internet speed test"
     )
     async def speedtest(self, message):
         """- start internet speed test"""
-        
+
         lang = self.config["language"]
         await message.edit(self.strings[f"testing_{lang}"])
         start_time = time.time()
