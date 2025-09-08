@@ -35,10 +35,10 @@ class GitClone(loader.Module):
         "success": "<emoji document_id=5305417687357203905>✅</emoji> <b>Код успешно клонирован в файл</b>",
         "cfg_file": "Укажи название и расширение для своего файла\nНапример: file.js, main.py, clone.java и т.д.",
     }
-    
-    @loader.command(ru_doc="-> клонировать код из репозитория, используя raw ссылку")
+
+    @loader.command(ru_doc="- клонировать код используя raw ссылку")
     async def gitclcmd(self, message):
-        """-> Clone code from repository using raw link"""
+        """- clone code using raw link"""
         args=utils.get_args_raw(message)
         if not args:
             await utils.answer(message, self.strings("no_args"))
