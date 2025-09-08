@@ -10,7 +10,6 @@ from .. import utils
 
 logger = logging.getLogger(__name__)
 
-
 @loader.tds
 class HisaCommandsLoggerMod(loader.Module):
     '''Hisa Commands Logger'''
