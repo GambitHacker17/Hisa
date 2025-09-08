@@ -270,7 +270,6 @@ class WebCreator:
                     url = match[1]
                     break
             event.set()
-
         await read_output()
         await event.wait()
         return url
@@ -329,7 +328,7 @@ class BirthdayWish(loader.Module):
         return url, runner
 
     async def wishcmd(self, message):
-        """создать веб-поздравление: <имя> <время(сек)>"""
+        """<имя> <время(сек)> - создать веб-поздравление"""
         args = utils.get_args_raw(message)
 
         if not args:
@@ -364,7 +363,7 @@ class BirthdayWish(loader.Module):
         await utils.answer(message, self.strings("expired"))
 
     async def wishlangcmd(self, message):
-        """изменить язык (ru/en)"""
+        """- изменить язык (ru/en)"""
         args = utils.get_args_raw(message)
 
         if not args:
