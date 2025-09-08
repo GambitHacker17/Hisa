@@ -71,14 +71,14 @@ class RPMod(loader.Module):
         if not self.db.get('RPMod', 'rpcomands', False):
             comands = {'чмок': 'чмокнул', 'кусь': 'кусьнул', 'поцеловать': 'поцеловал', 'шлепнуть': 'шлепнул', 'прижать': 'прижал', 'погладить': 'погладил', 'обнять': 'обнял'}
             self.db.set('RPMod', 'rpcomands', comands)
-        if not self.db.get('RPMod', 'useraccept', False):
-            self.db.set('RPMod', 'useraccept', {"chats": [], "users": []})
-        elif type(self.db.get('RPMod', 'useraccept')) == type([]):
-            self.db.set('RPMod', 'useraccept', {"chats": [], "users": self.db.get('RPMod', 'useraccept')})
+        if not self.db.get('RPMod', 'rpaccept', False):
+            self.db.set('RPMod', 'rpaccept', {"chats": [], "users": []})
+        elif type(self.db.get('RPMod', 'rpaccept')) == type([]):
+            self.db.set('RPMod', 'rpaccept', {"chats": [], "users": self.db.get('RPMod', 'rpaccept')})
         if self.db.get("RPMod", "rpconfigurate", False):
             self.db.set("RPMod", "rpconfigurate", self.merge_dict(conf_default, self.db.get("RPMod", "rpconfigurate")))
 
-    async def addrpcmd(self, message):
+    async def rpaddcmd(self, message):
         """<команда> / <действие> / <эмодзи> - добавить команду"""
         args = utils.get_args_raw(message)
         dict_rp = self.db.get('RPMod', 'rpcomands') or {}
@@ -134,7 +134,7 @@ class RPMod(loader.Module):
         except:
             await utils.answer(message, '<b>Вы не ввели разделитель /</b>')
 
-    async def delrpcmd(self, message):
+    async def rpdelcmd(self, message):
         """<команда> - удалить команду, <all> - удалить все"""
         args = utils.get_args_raw(message)
         dict_rp = self.db.get('RPMod', 'rpcomands') or {}
@@ -221,7 +221,7 @@ class RPMod(loader.Module):
                 nicks.pop(str(user.id))
             self.db.set('RPMod', 'rpnicks', nicks)
             return await utils.answer(message, f"Ник пользователя <b>{str(user.id)}</b> изменён на '<b>{user.first_name}</b>'")
-        
+
         lst = []
         nick = ''
         for x in args:
@@ -341,20 +341,20 @@ class RPMod(loader.Module):
         else:
             await utils.answer(message, 'Что-то пошло не так..')
 
-    async def useracceptcmd(self, message):
+    async def rpacceptcmd(self, message):
         """- добавить/удалить чат в список разрешённых"""
         reply = await message.get_reply_message()
         args = utils.get_args_raw(message)
-        userA = self.db.get('RPMod', 'useraccept') or {"chats": [], "users": []}
+        userA = self.db.get('RPMod', 'rpaccept') or {"chats": [], "users": []}
         if not reply and not args and message.is_group:
             chat = message.chat
             if chat.id not in userA["chats"]:
                 userA["chats"].append(chat.id)
-                self.db.set('RPMod', 'useraccept', userA)
+                self.db.set('RPMod', 'rpaccept', userA)
                 return await utils.answer(message, f'<i>Чату <b><u>{chat.title}</u></b>[<code>{chat.id}</code>] открыт доступ.</i>')
             else:
                 userA["chats"].remove(chat.id)
-                self.db.set('RPMod', 'useraccept', userA)
+                self.db.set('RPMod', 'rpaccept', userA)
                 return await utils.answer(message, f'<i>Чату <b><u>{chat.title}</u></b>[<code>{chat.id}</code>] закрыт доступ.</i>')
         elif args == '-l':
             sms = '<b>Пользователи, у которых есть доступ к командам:</b>'
@@ -382,22 +382,22 @@ class RPMod(loader.Module):
             args = int(args) if args.isdigit() else reply.sender_id
             if args in userA["users"]:
                 userA["users"].remove(args)
-                self.db.set('RPMod', 'useraccept', userA)
+                self.db.set('RPMod', 'rpaccept', userA)
                 await utils.answer(message, f'<b>Пользователю <code>{args}</code> был закрыт доступ</b>')
             elif args in userA["chats"]:
                 userA["chats"].remove(args)
-                self.db.set('RPMod', 'useraccept', userA)
+                self.db.set('RPMod', 'rpaccept', userA)
                 await utils.answer(message, f'<b>Чату <code>{args}</code> был закрыт доступ</b>')
             else:
                 try:
                     entity = await message.client.get_entity(args)
                     if isinstance(entity, Channel):
                         userA["chats"].append(args)
-                        self.db.set('RPMod', 'useraccept', userA)
+                        self.db.set('RPMod', 'rpaccept', userA)
                         await utils.answer(message, f'<b>Чату <code>{args}</code> был открыт доступ</b>')
                     else:
                         userA["users"].append(args)
-                        self.db.set('RPMod', 'useraccept', userA)
+                        self.db.set('RPMod', 'rpaccept', userA)
                         await utils.answer(message, f'<b>Пользователю <code>{args}</code> был открыт доступ</b>')
                 except:
                     await utils.answer(message, f'<b>Не удалось найти entity для {args}</b>')
@@ -444,7 +444,7 @@ class RPMod(loader.Module):
             emojies = self.db.get('RPMod', 'rpemoji') or {}
             ex = self.db.get("RPMod", "exlist") or []
             nicks = self.db.get('RPMod', 'rpnicks') or {}
-            users_accept = self.db.get('RPMod', 'useraccept') or {"chats": [], "users": []}
+            users_accept = self.db.get('RPMod', 'rpaccept') or {"chats": [], "users": []}
             conf = self.db.get("RPMod", "rpconfigurate") or conf_default
 
             chat_rp = await message.client.get_entity(message.to_id)
@@ -454,14 +454,14 @@ class RPMod(loader.Module):
 
             if message.sender_id not in users_accept["users"] and message.sender_id != me_id and chat_rp.id not in users_accept["chats"]: 
                 return
-            
+
             me = await message.client.get_entity(message.sender_id)
 
             if str(me.id) in nicks.keys():
                 nick = nicks[str(me.id)]
             else:
                 nick = me.first_name
-                
+
             args = message.text.lower()
             lines = args.splitlines()
             tags = lines[0].split(' ')
@@ -489,7 +489,7 @@ class RPMod(loader.Module):
                 detail.append(' ')
             if detail[0] not in comand.keys(): 
                 return
-                
+
             detail[1] = ' ' + detail[1] 
             user.first_name = nicks[str(user.id)] if str(user.id) in nicks else user.first_name
 
