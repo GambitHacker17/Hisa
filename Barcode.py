@@ -19,7 +19,7 @@ async def generate_barcode(data, filename):
 
 @loader.tds
 class BarcodeGeneratorMod(loader.Module):
-    """Генерирует штрих код (code128)"""
+    """Генерирует штрих-код"""
 
     strings = {
         "name": "BarcodeGenerator",
@@ -29,15 +29,15 @@ class BarcodeGeneratorMod(loader.Module):
     async def barcodecmd(self, message):
         """<числовые данные>"""
         args = utils.get_args_raw(message)
-        
+
         if not args:
             await utils.answer(message, "Пожалуйста, введите данные для генерации")
             return
-            
+
         if not re.match("^[0-9]+$", args):
             await utils.answer(message, "Ошибка: штрих-код может содержать только цифры")
             return
-            
+
         try:
             randuuid = str(uuid.uuid4())
             filename = f"{randuuid}.png"
