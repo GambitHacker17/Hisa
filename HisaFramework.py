@@ -14,9 +14,6 @@ from ..inline.types import InlineCall, InlineQuery
 logger = logging.getLogger(__name__)
 
 async def bash_exec(command: str):
-    """
-    Асинхронное выполнение команд в терминале
-    """
     a = await asyncio.create_subprocess_shell(
         command.strip(),
         stdin=asyncio.subprocess.PIPE,
@@ -38,7 +35,6 @@ async def bash_exec(command: str):
 
 
 def get_tree(directory, level=0):
-    """Рекурсивно строит строковое представление дерева каталогов."""
     tree = ""
     for item in sorted(os.listdir(directory)):
         item_path = os.path.join(directory, item)
@@ -55,42 +51,41 @@ def get_tree(directory, level=0):
                 tree += "|   " * level + "|-- " + f"{item}\n"
     return tree
 
-
 @loader.tds
 class HisaFrameworkMod(loader.Module):
     """Модуль для кастомизации Hisa Userbot"""
 
     strings = {
         "name": "HisaFramework",
-        
+
         "main.info.text": (
             "<b>Hisa Framework</b> - лучший <code>мультитул</code> для вашего Hisa Userbot.\n"
             "Подходит как для обычного <b>пользователя</b>, так и для <b>продвинутого пользователя</b>.\n"
             "Имеет множество функций для помощи в <b>кастомизации</b> и <b>модификации</b> вашего Hisa.\n"
             "Открывает <b>портал новых возможностей</b> для разработки."
         ),
-        
+
         "config.pip_install": "Команда установки PIP.",
         "config.pip_uninstall": "Команда удаления PIP.",
         "config.version_check": "Проверка доступной версии Hisa.",
-        
+
         "menu.title": "<b>Выберите действие</b>",
         "menu.button.files": "📂 Дерево файлов Hisa",
         "menu.button.database": "🖊️ Редактор базы данных",
         "menu.button.editors": "📝 Простые редакторы",
         "menu.button.pip_manager": "⛩️ Менеджер PIP пакетов",
         "menu.button.info": "🚀 ИНФО",
-        
+
         "database.title": "🖊️ <b>Настройка базы данных вашего Hisa.</b>",
         "database.button.enter_value": "🖊️ Ввести значение",
         "database.value_description": "🖊️ Введите новое значение базы данных",
-        
+
         "editors.title": "📝 <b>Простое редактирование значений</b>",
         "editors.button.device": "💻 Изменить устройство",
         "editors.button.device.description": "🖊️ Напишите ваше устройство",
         "editors.button.startup": "⌛ Изменить время запуска",
         "editors.button.startup.description": "🖊️ Напишите ваше UNIX время",
-        
+
         "pip_manager.button.add": "➕ добавить",
         "pip_manager.button.remove": "➖ удалить",
         "pip_manager.button.add.description": "➕ Напишите название пакета из PyPi",
@@ -116,9 +111,8 @@ class HisaFrameworkMod(loader.Module):
                 validator=loader.validators.Boolean(),
             ),
         )
-        
+
     async def client_ready(self, client, db):
-        """Инициализирует базу данных когда юзербот готов."""
         self.db = db
         if "HisaFramework" not in db.keys():
             db["HisaFramework"] = {}
@@ -127,8 +121,8 @@ class HisaFrameworkMod(loader.Module):
 
     @loader.inline_handler()
     async def framework(self, query: InlineQuery):
-        """Открывает меню через inline бота"""
-   
+        """- открывает меню через inline бота"""
+
         return {
             "title": "Hisa Framework",
             "description": "Открыть меню Hisa framework",
@@ -167,7 +161,7 @@ class HisaFrameworkMod(loader.Module):
 
     @loader.command()
     async def frameworkcmd(self, message: Message):
-        """Открывает меню через команду"""
+        """- открывает меню через команду"""
         await self.inline.form(
             self.strings("menu.title"),
             reply_markup=[
@@ -206,41 +200,41 @@ class HisaFrameworkMod(loader.Module):
     async def pip_manager_add(self, call: InlineCall, query: str, inline_message_id: str):
         command = self.config["pip_install"]
         stdout = await bash_exec(f"{sys.executable} -m {command} {query}")
-        
+
         output = (
             stdout
             if len(stdout) <= 2000
             else stdout[:-1000]
         )
-        
+
         text = (
             "➕ <b>Установлено!</b>\n"
             f"<code>{output}</code>"
         )
-        
+
         await call.edit(text)
-        
+
     async def pip_manager_remove(self, call: InlineCall, query: str, inline_message_id: str):
         command = self.config["pip_uninstall"]
         stdout = await bash_exec(f"{sys.executable} -m {command} {query}")
-        
+
         output = (
             stdout
             if len(stdout) <= 2000
             else stdout[:-1000]
         )
-        
+
         text = (
             "➖ <b>Удалено!</b>\n"
             f"<code>{output}</code>"
         )
-        
+
         await call.edit(text)
-        
+
     async def pip_manager(self, call: InlineCall):
-        
+
         output = await bash_exec(f"{sys.executable} -m pip freeze")
-        
+
         await call.edit(
             f"<code>{output}</code>",
             reply_markup=[
@@ -258,15 +252,15 @@ class HisaFrameworkMod(loader.Module):
                 },
             ]
         )
-        
+
     async def info(self, call: InlineCall):
         await call.edit(self.strings("main.info.text"))
-        
+
     async def device(self, call: InlineCall, query: str, inline_message_id: str):
         """Изменяет настройку устройства."""
         utils.get_named_platform = lambda: query
         await call.edit(f"🖊️ <b>Изменено на {query}!</b>", inline_message_id=inline_message_id)
-        
+
     async def startup(self, call: InlineCall, query: str, inline_message_id: str):
         """Изменяет настройку времени запуска."""
         utils.init_ts = int(query)
@@ -342,7 +336,7 @@ class HisaFrameworkMod(loader.Module):
     async def database(self, call: InlineCall):
         """Редактор базы данных"""
         keys = list(self.db.keys())
-    
+
         button_rows = []
         for i in range(0, len(keys), 5):
             row = [
@@ -354,7 +348,7 @@ class HisaFrameworkMod(loader.Module):
                 for key in keys[i:i + 5]
             ]
             button_rows.append(row)
-    
+
         button_rows.insert(0, [
             {
                 "text": "📌 HisaFramework",
@@ -362,7 +356,7 @@ class HisaFrameworkMod(loader.Module):
                 "args": (["HisaFramework"],),
             },
         ])
-    
+
         await call.edit(
             self.strings["database.title"],
             reply_markup=button_rows
