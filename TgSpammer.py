@@ -1225,7 +1225,6 @@ class TelegramBomber(loader.Module):
         ]
 
     async def bomb_task(self, message: Message, phone: str, count: int):
-        """Background bombing task"""
         try:
             self.sent_count = 0
 
@@ -1280,7 +1279,6 @@ class TelegramBomber(loader.Module):
 
     async def make_request(self, phone: str, proxy: Optional[dict], service: str, 
                          bot_id: Optional[str], origin: str) -> bool:
-        """Make request to specific service"""
         try:
             headers = {
                 'User-Agent': random.choice(self.user_agents),
