@@ -100,8 +100,8 @@ class DaysToMyBirthday(loader.Module):
             await asyncio.sleep(60)
 
     @loader.command(
-        ru_doc="Выставить таймер дней в ник",
-        en_doc="Set the timer of days in the nickname",
+        ru_doc="- выставить таймер дней в ник",
+        en_doc="- set the timer of days in the nickname",
     )
     async def btname(self, message):
         user = await self.client(GetFullUserRequest(self.client.hikka_me.id))
@@ -121,8 +121,8 @@ class DaysToMyBirthday(loader.Module):
             await utils.answer(message, self.strings("btname_yes"))
 
     @loader.command(
-        ru_doc="Вывести таймер",
-        en_doc="Display the timer",
+        ru_doc="- вывести таймер",
+        en_doc="- display the timer",
     )
     async def bt(self, message):
         if self.config["birthday_date"] is None:
