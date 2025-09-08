@@ -50,3 +50,4 @@ HisaFramework
 VirtualKeyboard
 BirthdayWish
 DND
+RPmod
