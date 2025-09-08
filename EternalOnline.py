@@ -7,7 +7,7 @@ from telethon.tl.functions.account import UpdateStatusRequest
 @loader.tds
 class EternalOnlineMod(loader.Module):
     """Вечный онлайн"""
-    
+
     strings = {
         'name': 'Eternal Online',
         'enabled': '🌐 Вечный онлайн <b>включен</b>\n'
@@ -23,13 +23,12 @@ class EternalOnlineMod(loader.Module):
             self.db.set("EternalOnline", "status", False)
 
     async def onlinecmd(self, message):
-        """Управление онлайном.
-        Пример: .online <задержка/сек>"""
+        """<задержка/сек> - вкл/выкл онлайн"""
         args = message.text.split()
-        
+
         current_delay = self.db.get("EternalOnline", "delay")
         current_status = self.db.get("EternalOnline", "status")
-        
+
         if len(args) > 1 and args[1].isdigit():
             new_delay = int(args[1])
             self.db.set("EternalOnline", "delay", new_delay)
@@ -47,10 +46,10 @@ class EternalOnlineMod(loader.Module):
             await message.edit(self.strings['disabled'])
 
     async def checkonlinecmd(self, message):
-        """Текущий статус"""
+        """- текущий статус онлайна"""
         status = self.db.get("EternalOnline", "status")
         delay = self.db.get("EternalOnline", "delay")
-        
+
         if status:
             await message.edit(self.strings['enabled'].format(delay))
         else:
