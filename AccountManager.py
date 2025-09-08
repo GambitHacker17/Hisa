@@ -43,7 +43,6 @@ class AccountManager(loader.Module):
         self._db = db
         self._client = client
 
-
     @loader.command()
     async def setbio(self, message):
         """<описание> - изменить био"""
@@ -74,7 +73,7 @@ class AccountManager(loader.Module):
 
     @loader.command()
     async def setuser(self, message):
-        """<юзернейм> - изменить юзернейм (оставьте пустым для удаления)"""
+        """<юзернейм> - изменить юзернейм"""
         args = utils.get_args_raw(message)
 
         try:
@@ -131,10 +130,10 @@ class AccountManager(loader.Module):
         except Exception as e:
             logging.exception(f"Ошибка при проверке юзернейма {username}: {e}")
             return False
-        
+
     @loader.command()
     async def profile(self, message):
-        """отображает полную информацию о профиле пользователя"""
+        """- отображает информацию о профиле"""
         args = utils.get_args_raw(message)
         user_id = None
         if args:
@@ -163,7 +162,7 @@ class AccountManager(loader.Module):
 
     @loader.command()
     async def getprivacy(self, message):
-        """показать текущие настройки конфиденциальности"""
+        """- показать текущие настройки конфиденциальности"""
         last_seen = await self._client(functions.account.GetPrivacyRequest(
             key=types.InputPrivacyKeyStatusTimestamp()
         ))
@@ -189,7 +188,7 @@ class AccountManager(loader.Module):
         ))
 
         global_settings = await self._client(functions.account.GetGlobalPrivacySettingsRequest())
-        
+
         privacy_info = (
             f"<emoji document_id=5231112502573555738>👤</emoji> <b>время последнего посещения:</b> {self._format_privacy(last_seen.rules)}",
             f"<emoji document_id=5231112502573555738>👤</emoji> <b>номер телефона:</b> {self._format_privacy(phone.rules)}",
@@ -208,7 +207,6 @@ class AccountManager(loader.Module):
             )    
 
     def _format_privacy(self, rules):
-        """Форматирует правила приватности"""
         if any(isinstance(rule, types.PrivacyValueAllowAll) for rule in rules):
             return "<emoji document_id=5235875883297824772>👤</emoji> Все"
         elif any(isinstance(rule, types.PrivacyValueAllowContacts) for rule in rules):
