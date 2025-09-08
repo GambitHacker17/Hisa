@@ -5,10 +5,9 @@ from telethon import functions
 from random import randint
 from .. import loader, utils
 
-
 @loader.tds
 class FakeMod(loader.Module):
-    """Имитация действий с возможностью выбора времени(сек)"""
+    """Имитация действий в секундах"""
 
     strings = {"name": "Fake Actions"}
 
@@ -17,47 +16,47 @@ class FakeMod(loader.Module):
         self.stop_event.set()
 
     async def typecmd(self, message):
-        """Набор текста"""
+        """- набор текста"""
         await self._handle_action(message, "typing")
 
     async def voicecmd(self, message):
-        """Отправка голосового сообщения"""
+        """- отправка голосового сообщения"""
         await self._handle_action(message, "voice")
 
     async def gamecmd(self, message):
-        """Активность в игре"""
+        """- активность в игре"""
         await self._handle_action(message, "game")
 
     async def videocmd(self, message):
-        """Отправка видео"""
+        """- отправка видео"""
         await self._handle_action(message, "video")
 
     async def photocmd(self, message):
-        """Отправка фото"""
+        """- отправка фото"""
         await self._handle_action(message, "photo")
 
     async def documentcmd(self, message):
-        """Отправка документа"""
+        """- отправка документа"""
         await self._handle_action(message, "document")
 
     async def locationcmd(self, message):
-        """Отправка геолокации"""
+        """- отправка геолокации"""
         await self._handle_action(message, "location")
 
     async def recordvideocmd(self, message):
-        """Запись видео"""
+        """- запись видео"""
         await self._handle_action(message, "record-video")
 
     async def recordvoicecmd(self, message):
-        """Запись голосового сообщения"""
+        """- запись голосового сообщения"""
         await self._handle_action(message, "record-audio")
 
     async def recordroundcmd(self, message):
-        """Запись видеосообщения"""
+        """- запись видеосообщения"""
         await self._handle_action(message, "record-round")
 
     async def stopimitcmd(self, message):
-        """Остановить текущую имитацию"""
+        """- остановить текущую имитацию"""
         await message.delete()
         if not self.stop_event.is_set():
             self.stop_event.set()
@@ -65,15 +64,15 @@ class FakeMod(loader.Module):
     async def _handle_action(self, message, action):
         await message.delete()
         self.stop_event.set()
-        
+
         args = utils.get_args(message)
         duration = int(args[0]) if args else 60
-        
+
         if duration <= 0:
             return
-            
+
         self.stop_event.clear()
-        
+
         try:
             async with message.client.action(message.chat_id, action):
                 await self._wait_with_stop(duration)
