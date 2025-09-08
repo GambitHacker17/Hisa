@@ -13,12 +13,11 @@ class InfoMod(loader.Module):
         "name": "Info",
         "loading": "🕐 <b>Processing entity...</b>",
         "not_chat": "🚫 <b>This is not a chat!</b>",
-        "userinfo_doc": "📋 Получить информацию о пользователе\n"
-                        "Использование: .userinfo [@username/id/реплай]",
+        "userinfo_doc": "- получить информацию о пользователе",
     }
 
     async def userinfocmd(self, message: Message):
-        """Получить информацию о пользователе"""
+        """- получить информацию о пользователе"""
         args = utils.get_args_raw(message)
         reply = await message.get_reply_message()
 
