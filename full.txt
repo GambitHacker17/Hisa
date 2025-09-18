@@ -55,3 +55,4 @@ GeoMod
 ImageCut
 CheckModules
 CheckHost
+BanWord
