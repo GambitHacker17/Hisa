@@ -54,3 +54,4 @@ RPmod
 GeoMod
 ImageCut
 CheckModules
+CheckHost
