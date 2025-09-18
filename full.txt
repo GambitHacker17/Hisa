@@ -56,3 +56,4 @@ ImageCut
 CheckModules
 CheckHost
 BanWord
+ClCache
