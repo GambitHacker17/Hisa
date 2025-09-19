@@ -57,3 +57,4 @@ CheckModules
 CheckHost
 BanWord
 ClCache
+MyUsenames
