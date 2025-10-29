@@ -23,7 +23,7 @@ def format_(state: Union[bool, None]) -> str:
     if state is None:
         return "❔"
 
-    return "✅" if state else "🚫 Not"
+    return "✅" if state else "🚫"
 
 @loader.tds
 class DND(loader.Module):
@@ -70,7 +70,7 @@ class DND(loader.Module):
         "args_pmban": "ℹ️ <b>Example usage: </b><code>.pmbanlast 5</code>",
         "available_statuses": "<b>🦊 Available statuses:</b>\n\n",
         "banned": (
-            " <b>Hello •ᴗ•</b>\n<b>Unit «SIGMA»<b> – <b>guardian</b> of this"
+            " <b>Hello •ᴗ•</b>\n<b>Unit «DND»<b> – <b>guardian</b> of this"
             " account.\nYou <b>not approved</b>!"
             " \n<b>I need to ban you in terms of security.</b>" 
         ),
@@ -79,14 +79,14 @@ class DND(loader.Module):
             " you</b>\n<b>{} Active conversation</b>\n\n<b>✊"
             " Actions</b>\n\n<b>{} Reported spam</b>\n<b>{} Deleted"
             " dialog</b>\n<b>{} Blocked</b>\n\n<b>ℹ️"
-            " Message</b>\n<code>{}</code>"
+            " Message:</b>\n<blockquote>{}</blockquote>{}"
         ),
+        "banned_log_media": "\n\n<b>📎 Media types:</b>\n<code>{}</code>",
         "blocked": '😶‍🌫️ <b><a href="tg://user?id={}">{}</a> blocked.</b>',
         "hello": (
-            "🔏 <b>Unit «SIGMA»</b> protects your personal messages from"
+            "🔏 <b>Unit «DND»</b> protects your personal messages from"
             " intrusions. It will block everyone, who's trying to invade"
-            " you.\n\nUse <code>.pmbanlast</code> if you've already been"
-            " pm-raided."
+            " you"
         ),
         "no_pchat": "<b>This command is only available in private chats.</b>",
         "no_reply": "ℹ️ <b>Reply to a message to block the user.</b>",
@@ -177,7 +177,7 @@ class DND(loader.Module):
         "args_pmban": "ℹ️ <b>Пример использования: </b><code>.pmbanlast 5</code>",
         "available_statuses": "<b>🦊 Доступные статусы:</b>\n\n",
         "banned": (
-            " <b>Привет •ᴗ•</b>\n<b>Юнит «SIGMA»<b> – <b>защитник</b> этого"
+            " <b>Привет •ᴗ•</b>\n<b>Юнит «DND»<b> – <b>защитник</b> этого"
             " аккаунта.\nВы <b>не подтверждены!</b>"
             " \n<b>Я должен заблокировать Вас из соображений безопасности.</b>"
         ),
@@ -186,14 +186,14 @@ class DND(loader.Module):
             " тобой</b>\n<b>{} Активный диалог</b>\n\n<b>✊"
             " Действия</b>\n\n<b>{} Сообщить о спаме</b>\n<b>{} Удалить"
             " диалог</b>\n<b>{} Заблокировать</b>\n\n<b>ℹ️"
-            " Сообщение</b>\n<code>{}</code>"
+            " Сообщение:</b>\n<blockquote>{}</blockquote>{}"
         ),
+        "banned_log_media": "\n\n<b>📎 Типы медиа:</b>\n<code>{}</code>",
         "blocked": '😶‍🌫️ <b><a href="tg://user?id={}">{}</a> заблокирован.</b>',
         "hello": (
-            "🔏 <b>«SIGMA»</b> защищает ваши личные сообщения от нежелательного"
+            "🔏 <b>Юнит «DND»</b> защищает ваши личные сообщения от нежелательного"
             " контакта. Это будет блокировать всех, кто попытается связаться с"
-            " Вами..\n\nИспользуй <code>.pmbanlast</code> если уже были попытки"
-            " нежелательного вторжения."
+            " Вами"
         ),
         "no_pchat": "<b>Эта команда работает только в ЛС.</b>",
         "no_reply": (
@@ -285,7 +285,7 @@ class DND(loader.Module):
             ),
             loader.ConfigValue(
                 "photo",
-                "https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/unit_sigma.png",
+                "https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/unit_dnd.png",
                 doc=lambda: self.strings("_cfg_photo"),
                 validator=loader.validators.Link(),
             ),
@@ -315,11 +315,12 @@ class DND(loader.Module):
         self._ratelimit_dnd_threshold = 10
         self._ratelimit_dnd_timeout = 5 * 60
         self._sent_messages = []
+        self._currently_processing = set()
         self._whitelist = self.get("whitelist", [])
         if not self.get("ignore_hello", False):
             await self.inline.bot.send_photo(
                 self.tg_id,
-                photo="https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/unit_sigma.png",
+                photo="https://raw.githubusercontent.com/GambitHacker17/Hisa/Master/unit_dnd.png",
                 caption=self.strings("hello"),
                 parse_mode="HTML",
             )
@@ -338,10 +339,50 @@ class DND(loader.Module):
         self.set("whitelist", self._whitelist)
         logger.info(self.strings("_log_msg_unapproved").format(user))
 
+    def _get_media_types(self, message) -> str:
+        if not message.media:
+            return ""
+
+        media_types = []
+        try:
+            if hasattr(message.media, 'photo'):
+                media_types.append("Photo")
+            if hasattr(message.media, 'document'):
+                doc = message.media.document
+                if hasattr(doc, 'mime_type'):
+                    if 'video' in doc.mime_type:
+                        media_types.append("Video")
+                    elif 'audio' in doc.mime_type:
+                        media_types.append("Audio")
+                    elif 'image' in doc.mime_type:
+                        media_types.append("Image")
+                    else:
+                        media_types.append("Document")
+                else:
+                    media_types.append("Document")
+            if hasattr(message.media, 'webpage'):
+                media_types.append("Webpage")
+            if hasattr(message.media, 'game'):
+                media_types.append("Game")
+            if hasattr(message.media, 'geo'):
+                media_types.append("Location")
+            if hasattr(message.media, 'contact'):
+                media_types.append("Contact")
+            if hasattr(message.media, 'poll'):
+                media_types.append("Poll")
+            if hasattr(message.media, 'sticker'):
+                media_types.append("Sticker")
+        except Exception as e:
+            logger.debug(f"Error detecting media types: {e}")
+            media_types.append("Unknown")
+        
+        return ", ".join(media_types) if media_types else ""
+
     async def _send_dnd_message(
         self, message, peer, contact, started_by_you, active_peer, self_id
     ):
         if len(self._ratelimit_dnd) < self._ratelimit_dnd_threshold:
+            media_types = self._get_media_types(message)
             try:
                 await self._client.send_file(
                     peer,
@@ -357,23 +398,30 @@ class DND(loader.Module):
             self._ratelimit_dnd += [round(time.time())]
 
             try:
-                peer = await self._client.get_entity(peer)
+                peer_entity = await self._client.get_entity(peer)
             except ValueError:
                 await asyncio.sleep(1)
-                peer = await self._client.get_entity(peer)
+                peer_entity = await self._client.get_entity(peer)
+
+            media_info = ""
+            if media_types:
+                media_info = self.strings("banned_log_media").format(media_types)
+
+            log_message = self.strings("banned_log").format(
+                await self._get_tag(peer_entity, True),
+                format_(contact),
+                format_(started_by_you),
+                format_(active_peer),
+                format_(self.config["report_spam"]),
+                format_(self.config["delete_dialog"]),
+                format_(True),
+                self._raw_text(message)[:3000],
+                media_info
+            )
 
             await self.inline.bot.send_message(
                 self_id,
-                self.strings("banned_log").format(
-                    await self._get_tag(peer, True),
-                    format_(contact),
-                    format_(started_by_you),
-                    format_(active_peer),
-                    format_(self.config["report_spam"]),
-                    format_(self.config["delete_dialog"]),
-                    format_(True),
-                    self._raw_text(message)[:3000],
-                ),
+                log_message,
                 parse_mode="HTML",
                 disable_web_page_preview=True,
             )
@@ -801,55 +849,66 @@ class DND(loader.Module):
         message: Union[None, Message] = None,
     ) -> bool:
         cid = utils.get_chat_id(message)
+
+        if cid in self._currently_processing:
+            return True
+            
         if cid in self._whitelist:
             return
 
-        contact, started_by_you, active_peer = None, None, None
+        self._currently_processing.add(cid)
+        try:
+            contact, started_by_you, active_peer = None, None, None
 
-        with contextlib.suppress(ValueError):
-            entity = await message.get_sender()
-            if entity.bot:
-                return self._approve(cid, "bot")
+            with contextlib.suppress(ValueError):
+                entity = await message.get_sender()
+                if entity.bot:
+                    self._approve(cid, "bot")
+                    return
 
-            if self.config["ignore_contacts"]:
-                if entity.contact:
-                    return self._approve(cid, "ignore_contacts")
-                contact = False
+                if self.config["ignore_contacts"]:
+                    if entity.contact:
+                        self._approve(cid, "ignore_contacts")
+                        return
+                    contact = False
 
-        first_message = (
-            await self._client.get_messages(
-                peer,
-                limit=1,
-                reverse=True,
+            first_message = (
+                await self._client.get_messages(
+                    peer,
+                    limit=1,
+                    reverse=True,
+                )
+            )[0]
+
+            if (
+                getattr(message, "raw_text", False)
+                and first_message.sender_id == self.tg_id
+            ):
+                self._approve(cid, "started_by_you")
+                return
+            started_by_you = False
+
+            active_peer = await self._active_peer(cid, peer)
+            if active_peer:
+                return
+
+            self._ratelimit_dnd = list(
+                filter(
+                    lambda x: x + self._ratelimit_dnd_timeout < time.time(),
+                    self._ratelimit_dnd,
+                )
             )
-        )[0]
 
-        if (
-            getattr(message, "raw_text", False)
-            and first_message.sender_id == self.tg_id
-        ):
-            return self._approve(cid, "started_by_you")
-        started_by_you = False
-
-        active_peer = await self._active_peer(cid, peer)
-        if active_peer:
-            return
-
-        self._ratelimit_dnd = list(
-            filter(
-                lambda x: x + self._ratelimit_dnd_timeout < time.time(),
-                self._ratelimit_dnd,
+            await self._send_dnd_message(
+                message, peer, contact, started_by_you, active_peer, self.tg_id
             )
-        )
+            await self._punish_handler(cid)
 
-        await self._send_dnd_message(
-            message, peer, contact, started_by_you, active_peer, self.tg_id
-        )
-        await self._punish_handler(cid)
-
-        self._approve(cid, "blocked")
-        logger.warning(self.strings("_log_msg_punished").format(cid))
-        return True
+            self._approve(cid, "blocked")
+            logger.warning(self.strings("_log_msg_punished").format(cid))
+            return True
+        finally:
+            self._currently_processing.discard(cid)
 
     async def p__afk(
         self,
@@ -972,8 +1031,10 @@ class DND(loader.Module):
         try:
             if not str(t)[:-1].isdigit():
                 return 0
+
             if "y" in str(t):
                 return int(str(t)[:-1]) * 60 * 60 * 24 * 365
+
             if "w" in str(t):
                 t = int(t[:-1]) * 60 * 60 * 24 * 7
 
