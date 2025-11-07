@@ -58,3 +58,4 @@ CheckHost
 BanWord
 ClCache
 MyUsenames
+Gemini
