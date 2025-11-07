@@ -59,3 +59,4 @@ BanWord
 ClCache
 MyUsenames
 Gemini
+SysInfo
