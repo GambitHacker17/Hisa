@@ -54,7 +54,7 @@ class VoicyMod(loader.Module):
         ),
         "converted": (
             "<b><emoji document_id=6041850934756119589>🫠</emoji>"
-            " Распознано:</b>\n<i>{}</i>"
+            " Распознано:</b>\n<blockquote>{}</blockquote>"
         ),
         "voice_not_found": (
             "<emoji document_id=6041850934756119589>🫠</emoji> <b>Нет ответа на"
