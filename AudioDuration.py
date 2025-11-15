@@ -63,7 +63,7 @@ class AudioDuration(loader.Module):
 
         reply = await message.get_reply_message()
         if not reply or not reply.file:
-            await message.edit("<b>Ответь на сообщение с файлом</b>")
+            await message.edit("<b>Ответь на сообщение с голосовым</b>")
             return
 
         file = await message.client.download_media(reply.media)
