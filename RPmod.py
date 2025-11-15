@@ -241,14 +241,11 @@ class RPMod(loader.Module):
         command = parts[0].lower()
         target = parts[1]
         replica = parts[2] if len(parts) > 2 else None
-
         commands_dict = self.db.get('RPMod', 'rpcomands') or {}
         emojies_dict = self.db.get('RPMod', 'rpemoji') or {}
         nicks_dict = self.db.get('RPMod', 'rpnicks') or {}
-
         from_user = query.from_user
         from_nick = nicks_dict.get(str(from_user.id), from_user.first_name)
-
         target_user = None
         target_id = None
         
@@ -730,7 +727,7 @@ class RPMod(loader.Module):
             s2 = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-s2'].items()])
             s3 = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-s3'].items()])
             sE = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-sE'].items()])
-            sS = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-sS'].values()])
+            sS = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-sS'].items()])
             msg_text = f'⚙️ <b>Настройка шаблона для команды:</b>\n-s1 --- включить/выключить стиль для действия:\n{s1}\n-s2 --- действует на текст "С репликой":\n{s2}\n-s3 --- действует на саму реплику:\n{s3}\n-sE --- выбор эмодзи перед репликой:\n{sE}\n-sS --- выбор символа для разрыва строк в реплике:\n{sS}'
             return await utils.answer(message, msg_text)
         args = args.split(' ')
