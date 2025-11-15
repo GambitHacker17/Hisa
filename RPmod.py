@@ -1,17 +1,28 @@
 # meta developer: @MartyyyK
 
 import subprocess
+import asyncio
+import time
+import string
+import pickle
+import re
+import random
+from typing import Dict, List, Optional, Any
+
 try:
     import emoji
     from emoji import is_emoji
-except:
+except ImportError:
     mod_inst = subprocess.Popen("pip install emoji==2.0.0", shell=True) 
     mod_inst.wait()
     import emoji
     from emoji import is_emoji
+
+from telethon.tl.types import Channel, Message, User
+from telethon.tl.functions.messages import GetBotCallbackAnswerRequest
+from telethon import events
 from .. import loader, utils
-import string, pickle, re
-from telethon.tl.types import Channel
+from ..inline.types import InlineCall, InlineQuery
 
 conf_default = {
     '-s1': {
@@ -48,13 +59,20 @@ conf_default = {
         '2': [False, 'разрыв строки', '\n'],
         '3': [False, 'точка + пробел', '. '],
         '4': [False, 'запятая + пробел', ', ']
-    } 
+    }
 }
 
 @loader.tds
 class RPMod(loader.Module):
     """Role Play module"""
     strings = {'name': 'RPMod'}
+
+    def __init__(self):
+        super().__init__()
+        self.inline_pending: Dict[str, Dict[str, Any]] = {}
+        self.default_variable = "Text"
+        self.any_list_or_dictionary = {}
+        self.edit_text = "off or on"
 
     async def client_ready(self, client, db):
         self.db = db
@@ -69,7 +87,7 @@ class RPMod(loader.Module):
         if not self.db.get('RPMod', 'rpemoji', False):
             self.db.set('RPMod', 'rpemoji', {})
         if not self.db.get('RPMod', 'rpcomands', False):
-            comands = {'чмок': 'чмокнул', 'кусь': 'кусьнул', 'поцеловать': 'поцеловал', 'шлепнуть': 'шлепнул', 'прижать': 'прижал', 'погладить': 'погладил', 'обнять': 'обнял'}
+            comands = {}
             self.db.set('RPMod', 'rpcomands', comands)
         if not self.db.get('RPMod', 'rpaccept', False):
             self.db.set('RPMod', 'rpaccept', {"chats": [], "users": []})
@@ -77,6 +95,306 @@ class RPMod(loader.Module):
             self.db.set('RPMod', 'rpaccept', {"chats": [], "users": self.db.get('RPMod', 'rpaccept')})
         if self.db.get("RPMod", "rpconfigurate", False):
             self.db.set("RPMod", "rpconfigurate", self.merge_dict(conf_default, self.db.get("RPMod", "rpconfigurate")))
+
+    async def _inline_accept_handler(self, call: InlineCall, action_id: str):
+        if action_id not in self.inline_pending:
+            await call.delete()
+            return
+
+        action_data = self.inline_pending[action_id]
+
+        if call.from_user.id != action_data['to_id']:
+            await call.answer("Это действие не для вас", show_alert=True)
+            return
+
+        rp_text = await self._format_rp_action_accept(action_data)
+
+        await call.edit(
+            f"✅ {rp_text}",
+            reply_markup=None
+        )
+
+        del self.inline_pending[action_id]
+
+    async def _inline_decline_handler(self, call: InlineCall, action_id: str):
+        if action_id not in self.inline_pending:
+            await call.delete()
+            return
+
+        action_data = self.inline_pending[action_id]
+ 
+        if call.from_user.id != action_data['to_id']:
+            await call.answer("Это действие не для вас", show_alert=True)
+            return
+
+        decline_text = await self._format_rp_action_decline(action_data)
+        await call.edit(
+            f"❌ {decline_text}",
+            reply_markup=None
+        )
+        del self.inline_pending[action_id]
+
+    async def _format_rp_action_accept(self, action_data):
+        conf = self.db.get("RPMod", "rpconfigurate") or conf_default
+
+        s1 = [
+            ''.join([value[2] if value[0] else '' for value in conf['-s1'].values()]),
+            ''.join([value[3] if value[0] else '' for value in conf['-s1'].values()])
+        ]
+        s3 = [
+            ''.join([value[2] if value[0] else '' for value in conf['-s3'].values()]),
+            ''.join([value[3] if value[0] else '' for value in conf['-s3'].values()])
+        ]
+        sS = ''.join([value[2] if value[0] else '' for value in conf['-sS'].values()])
+
+        rpMessageSend = ''
+        if action_data['effective_command'] in action_data['emojies']: 
+            rpMessageSend += action_data['emojies'][action_data['effective_command']] + ' | '
+
+        if action_data['is_auto_verb']:
+            action_verb = action_data['transformed_command']
+        else:
+            action_verb = action_data['comand'][action_data['effective_command']]
+            
+        main_action = f"<a href='tg://user?id={action_data['from_id']}'>{action_data['nick']}</a> {s1[0]}{action_verb}{s1[1]} <a href='tg://user?id={action_data['to_id']}'>{action_data['target_nick']}</a>"
+
+        if action_data['replica']: 
+            replica_text = sS.join(action_data['replica'])
+            main_action += f" {s3[0]}{replica_text}{s3[1]}"
+
+        rpMessageSend += main_action
+
+        return rpMessageSend
+
+    async def _format_rp_action_decline(self, action_data):
+        conf = self.db.get("RPMod", "rpconfigurate") or conf_default
+
+        s3 = [
+            ''.join([value[2] if value[0] else '' for value in conf['-s3'].values()]),
+            ''.join([value[3] if value[0] else '' for value in conf['-s3'].values()])
+        ]
+        sS = ''.join([value[2] if value[0] else '' for value in conf['-sS'].values()])
+
+        decline_text = f"<a href='tg://user?id={action_data['to_id']}'>{action_data['target_nick']}</a> не принял(а) {action_data['command']}"
+        if action_data['replica']: 
+            replica_text = sS.join(action_data['replica'])
+            decline_text += f" {s3[0]}{replica_text}{s3[1]}"
+
+        decline_text += f" от <a href='tg://user?id={action_data['from_id']}'>{action_data['nick']}</a>"
+        return decline_text
+
+    async def _find_user_by_name(self, name: str):
+        name_lower = name.lower()
+        found_users = []
+
+        async for dialog in self.client.iter_dialogs():
+            entity = dialog.entity
+            if hasattr(entity, 'first_name') and hasattr(entity, 'id'):
+                first_name = (entity.first_name or '').lower()
+                last_name = (entity.last_name or '').lower()
+                full_name = f"{first_name} {last_name}".strip()
+                username = (getattr(entity, 'username', None) or '').lower()
+
+                if (name_lower == first_name or 
+                    name_lower == last_name or 
+                    name_lower == full_name or
+                    name_lower == username or
+                    name_lower == f"@{username}"):
+                    return entity
+
+                if name_lower in first_name or name_lower in full_name:
+                    found_users.append(entity)
+
+        if found_users:
+            return found_users[0]
+        return None
+
+    def _transform_verb(self, verb: str) -> str:
+        if verb.endswith('ть'):
+            return verb[:-2] + 'л'
+        return verb
+
+    @loader.inline_handler()
+    async def rp(self, query: InlineQuery):
+        """<команда> <кому> [реплика] - RP команда через инлайн"""
+        args = query.args
+        if not args:
+            return {
+                "title": "RP Commands",
+                "description": "Использование: <команда> <цель> [реплика]",
+                "message": "<b>📋 RP команды через инлайн:</b>\n\n"
+                        "Формат: <code>rp &lt;команда&gt; &lt;кому&gt; [реплика]</code>\n\n"
+                        "Используйте <code>.rplist</code> для просмотра всех команд",
+                "thumb": "https://img.icons8.com/color/96/000000/hearts.png"
+            }
+
+        parts = args.split(None, 2)
+        if len(parts) < 2:
+            return {
+                "title": "RP Commands",
+                "description": "Недостаточно аргументов",
+                "message": "❌ <b>Недостаточно аргументов</b>\n\n"
+                        "Использование: <code>&lt;команда&gt; &lt;кому&gt; [реплика]</code>\n\n",
+                "thumb": "https://img.icons8.com/color/96/000000/error.png"
+            }
+
+        command = parts[0].lower()
+        target = parts[1]
+        replica = parts[2] if len(parts) > 2 else None
+
+        commands_dict = self.db.get('RPMod', 'rpcomands') or {}
+        emojies_dict = self.db.get('RPMod', 'rpemoji') or {}
+        nicks_dict = self.db.get('RPMod', 'rpnicks') or {}
+
+        from_user = query.from_user
+        from_nick = nicks_dict.get(str(from_user.id), from_user.first_name)
+
+        target_user = None
+        target_id = None
+        
+        try:
+            if target.isdigit():
+                target_user = await self.client.get_entity(int(target))
+                target_id = target_user.id
+            elif target.startswith('@'):
+                target_user = await self.client.get_entity(target)
+                target_id = target_user.id
+            else:
+                target_user = await self._find_user_by_name(target)
+                if target_user:
+                    target_id = target_user.id
+                else:
+                    try:
+                        target_user = await self.client.get_entity(f"@{target}")
+                        target_id = target_user.id
+                    except:
+                        return {
+                            "title": "RP Commands",
+                            "description": f"Не удалось найти: {target}",
+                            "message": f"❌ <b>Не удалось найти:</b> {target}\n\n"
+                                    "Укажите @username, ID или имя пользователя",
+                            "thumb": "https://img.icons8.com/color/96/000000/error.png"
+                        }
+        except Exception as e:
+            return {
+                "title": "RP Commands",
+                "description": f"Не удалось найти: {target}",
+                "message": f"❌ <b>Не удалось найти:</b> {target}\n\n"
+                        "Укажите @username, ID или имя пользователя",
+                "thumb": "https://img.icons8.com/color/96/000000/error.png"
+            }
+
+        if not target_user or not target_id:
+            return {
+                "title": "RP Commands",
+                "description": f"Не удалось найти пользователя: {target}",
+                "message": f"❌ <b>Не удалось найти:</b> {target}\n\n"
+                        "Укажите @username, ID или имя пользователя",
+                "thumb": "https://img.icons8.com/color/96/000000/error.png"
+            }
+
+        if not hasattr(target_user, 'first_name'):
+            return {
+                "title": "RP Commands",
+                "description": f"Нельзя использовать чат/канал как цель",
+                "message": f"❌ <b>Нельзя использовать чат/канал как цель для RP команд</b>\n\n"
+                        "Укажите @username, ID или имя пользователя",
+                "thumb": "https://img.icons8.com/color/96/000000/error.png"
+            }
+
+        target_nick = nicks_dict.get(str(target_id), target_user.first_name)
+        effective_command = command
+        transformed_command = None
+        is_auto_verb = False
+
+        if command not in commands_dict:
+            transformed_command = self._transform_verb(command)
+            if transformed_command in commands_dict:
+                effective_command = transformed_command
+            else:
+                if command.endswith('ть'):
+                    effective_command = command
+                    is_auto_verb = True
+                else:
+                    available_commands = list(commands_dict.keys())[:10]
+                    return {
+                        "title": "RP Commands",
+                        "description": f"Команда '{command}' не найдена",
+                        "message": f"❌ <b>Команда '{command}' не найдена</b>\n\n"
+                                  f"Доступные команды ({len(commands_dict)}):\n"
+                                  f"<code>" + ", ".join(available_commands) + "</code>\n\n"
+                                  "Используйте <code>.rplist</code> для полного списка",
+                        "thumb": "https://img.icons8.com/color/96/000000/error.png"
+                    }
+
+        action_id = f"{int(time.time() * 1000)}_{from_user.id}_{random.randint(1000, 9999)}"
+
+        self.inline_pending[action_id] = {
+            'from_id': from_user.id,
+            'to_id': target_id,
+            'nick': from_nick,
+            'target_nick': target_nick,
+            'command': command,
+            'effective_command': effective_command,
+            'transformed_command': transformed_command,
+            'is_auto_verb': is_auto_verb,
+            'comand': commands_dict,
+            'emojies': emojies_dict,
+            'detail': '',
+            'replica': [replica] if replica else None,
+            'original_message': None
+        }
+
+        conf = self.db.get("RPMod", "rpconfigurate") or conf_default
+
+        s1 = [
+            ''.join([value[2] if value[0] else '' for value in conf['-s1'].values()]),
+            ''.join([value[3] if value[0] else '' for value in conf['-s1'].values()])
+        ]
+
+        rpMessageSend = ''
+        if effective_command in emojies_dict: 
+            rpMessageSend += emojies_dict[effective_command] + ' | '
+
+        action_verb = f"хочет {command}"
+        rpMessageSend += f"<a href='tg://user?id={from_user.id}'>{from_nick}</a> {s1[0]}{action_verb}{s1[1]} <a href='tg://user?id={target_id}'>{target_nick}</a>"
+
+        if replica:
+            sE = ''.join([value[1] if value[0] else '' for value in conf['-sE'].values()])
+            s2 = [
+                ''.join([value[2] if value[0] else '' for value in conf['-s2'].values()]),
+                ''.join([value[3] if value[0] else '' for value in conf['-s2'].values()])
+            ]
+            s3 = [
+                ''.join([value[2] if value[0] else '' for value in conf['-s3'].values()]),
+                ''.join([value[3] if value[0] else '' for value in conf['-s3'].values()])
+            ]
+            sS = ''.join([value[2] if value[0] else '' for value in conf['-sS'].values()])
+
+            rpMessageSend += f"\n{sE} {s2[0]}С репликой:{s2[1]} {s3[0]}{replica}{s3[1]}"
+
+        return {
+            "title": f"RP: {command} → {target_nick}",
+            "description": f"{from_nick} {action_verb} {target_nick}",
+            "message": rpMessageSend,
+            "thumb": "https://img.icons8.com/color/96/000000/hearts.png",
+            "reply_markup": [
+                [
+                    {
+                        "text": "Принять",
+                        "callback": self._inline_accept_handler,
+                        "args": (action_id,),
+                        "disable_security": True
+                    },
+                    {
+                        "text": "Отклонить", 
+                        "callback": self._inline_decline_handler,
+                        "args": (action_id,),
+                        "disable_security": True
+                    }
+                ]
+            ]
+        }
 
     async def rpaddcmd(self, message):
         """<команда> / <действие> / <эмодзи> - добавить команду"""
@@ -131,7 +449,7 @@ class RPMod(loader.Module):
                 dict_rp[key_rp] = value_rp
                 self.db.set('RPMod', 'rpcomands', dict_rp)
                 await utils.answer(message, f'<b>Командa \'<code>{key_rp}</code>\' успешно добавлена</b>')
-        except:
+        except Exception:
             await utils.answer(message, '<b>Вы не ввели разделитель /</b>')
 
     async def rpdelcmd(self, message):
@@ -140,7 +458,6 @@ class RPMod(loader.Module):
         dict_rp = self.db.get('RPMod', 'rpcomands') or {}
         dict_emoji_rp = self.db.get('RPMod', 'rpemoji') or {}
         key_rp = str(args)
-        count = 0
         if key_rp == 'all':
             dict_rp.clear()
             dict_emoji_rp.clear()
@@ -160,7 +477,7 @@ class RPMod(loader.Module):
                 else:
                     dict_rp.pop(key_rp)
                     self.db.set('RPMod', 'rpcomands', dict_rp)
-                await utils.answer(message, f'<b>Команda \'<code>{key_rp}</code>\' успешно удалена</b>')
+                await utils.answer(message, f'<b>Команда \'<code>{key_rp}</code>\' успешно удалена</b>')
             except KeyError:
                 await utils.answer(message, '<b>Команда не найдена</b>')
 
@@ -413,7 +730,7 @@ class RPMod(loader.Module):
             s2 = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-s2'].items()])
             s3 = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-s3'].items()])
             sE = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-sE'].items()])
-            sS = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-sS'].items()])
+            sS = '\n'.join([' | '.join([key, value[1], '✅' if value[0] else '❌']) for key, value in conf['-sS'].values()])
             msg_text = f'⚙️ <b>Настройка шаблона для команды:</b>\n-s1 --- включить/выключить стиль для действия:\n{s1}\n-s2 --- действует на текст "С репликой":\n{s2}\n-s3 --- действует на саму реплику:\n{s3}\n-sE --- выбор эмодзи перед репликой:\n{sE}\n-sS --- выбор символа для разрыва строк в реплике:\n{sS}'
             return await utils.answer(message, msg_text)
         args = args.split(' ')
@@ -436,11 +753,12 @@ class RPMod(loader.Module):
         self.db.set("RPMod", "rpconfigurate", conf)
         await utils.answer(message, f'Конфигурация успешно изменена')
 
+    @loader.watcher(only_messages=True)
     async def watcher(self, message):
         try:
             status = self.db.get("RPMod", "status")
             comand = self.db.get('RPMod', 'rpcomands') or {}
-            rezjim = self.db.get('RPMod', 'rprezjim')
+            rezjim = self.db.get("RPMod", "rprezjim")
             emojies = self.db.get('RPMod', 'rpemoji') or {}
             ex = self.db.get("RPMod", "exlist") or []
             nicks = self.db.get('RPMod', 'rpnicks') or {}
@@ -466,32 +784,48 @@ class RPMod(loader.Module):
             lines = args.splitlines()
             tags = lines[0].split(' ')
 
+            user = None
             if not tags[-1].startswith('@'):
                 reply = await message.get_reply_message()
                 if not reply:
                     return
                 user = await message.client.get_entity(reply.sender_id)
             else:
-                if not tags[-1][1:].isdigit():
+                target_mention = tags[-1][1:]
+                if not target_mention.isdigit():
                     try:
                         user = await message.client.get_entity(tags[-1])
                     except:
                         return
                 else:
                     try:
-                        user = await message.client.get_entity(int(tags[-1][1:]))
+                        user = await message.client.get_entity(int(target_mention))
                     except:
                         return
                 lines[0] = lines[0].rsplit(' ', 1)[0]
 
+            if not user:
+                return
+
             detail = lines[0].split(' ', maxsplit=1)
             if len(detail) < 2:
                 detail.append(' ')
-            if detail[0] not in comand.keys(): 
-                return
 
-            detail[1] = ' ' + detail[1] 
-            user.first_name = nicks[str(user.id)] if str(user.id) in nicks else user.first_name
+            command = detail[0]
+            effective_command = command
+            action_verb = None
+
+            if command in comand.keys():
+                action_verb = comand[command]
+            else:
+                if command.endswith('ть'):
+                    action_verb = self._transform_verb(command)
+                    effective_command = command
+                else:
+                    return
+
+            detail[1] = ' ' + detail[1]
+            target_nick = nicks[str(user.id)] if str(user.id) in nicks else user.first_name
 
             sE = ''.join([value[1] if value[0] else '' for value in conf['-sE'].values()])
             s1 = [
@@ -509,10 +843,10 @@ class RPMod(loader.Module):
             sS = ''.join([value[2] if value[0] else '' for value in conf['-sS'].values()])
 
             rpMessageSend = ''
-            if detail[0] in emojies.keys(): 
-                rpMessageSend += emojies[detail[0]] + ' | '
+            if effective_command in emojies.keys(): 
+                rpMessageSend += emojies[effective_command] + ' | '
 
-            rpMessageSend += f"<a href=tg://user?id={me.id}>{nick}</a> {s1[0]}{comand[detail[0]]}{s1[1]} <a href=tg://user?id={user.id}>{user.first_name}</a>{detail[1]}"
+            rpMessageSend += f"<a href='tg://user?id={me.id}'>{nick}</a> {s1[0]}{action_verb}{s1[1]} <a href='tg://user?id={user.id}'>{target_nick}</a>{detail[1]}"
 
             if len(lines) >= 2: 
                 rpMessageSend += f"\n{sE} {s2[0]}С репликой:{s2[1]} {s3[0]}{sS.join(lines[1:])}{s3[1]}"
@@ -526,7 +860,10 @@ class RPMod(loader.Module):
             pass
 
     def merge_dict(self, d1, d2):
-        d_all = {**d1, **d2}
-        for key in d_all:
-            d_all[key] = {**d1[key], **d_all[key]}
+        d_all = d1.copy()
+        for key in d2:
+            if key in d1 and isinstance(d1[key], dict) and isinstance(d2[key], dict):
+                d_all[key] = self.merge_dict(d1[key], d2[key])
+            else:
+                d_all[key] = d2[key]
         return d_all
