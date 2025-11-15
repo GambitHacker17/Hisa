@@ -60,3 +60,4 @@ ClCache
 MyUsenames
 Gemini
 SysInfo
+InlineSystemInfo
