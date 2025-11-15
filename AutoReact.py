@@ -5,7 +5,7 @@ from .. import loader, utils
 
 @loader.tds
 class AutoReactMod(loader.Module):
-    """Модуль для автореакций на сообщения"""
+    """Автореакции на сообщения"""
     strings = {
         "name": "AutoReact",
         "enabled": "✅ Автореакции включены в текущем чате",
@@ -22,7 +22,7 @@ class AutoReactMod(loader.Module):
             "current_reaction",
             "👍",
             "Текущая реакция (эмодзи или ID)",
-
+            
             "is_premium",
             False,
             "Является ли реакция Premium эмодзи"
@@ -41,31 +41,31 @@ class AutoReactMod(loader.Module):
         self.set("active_chats", self.active_chats)
         self.set("all_pm", self.all_pm)
 
-    @loader.command(ru_doc="- вкл/выкл автореакции в текущем чате")
+    @loader.command(ru_doc="- вкл/выкл в текущем чате")
     async def artoggle(self, message):
         chat_id = str(message.chat_id)
 
         if self.all_pm:
             self.all_pm = False
             await utils.answer(message, self.strings["all_pm_disabled"])
-
+        
         if chat_id in self.active_chats:
             del self.active_chats[chat_id]
             status = False
         else:
             self.active_chats[chat_id] = True
             status = True
-
+            
         self.save_active_chats()
-
+        
         await utils.answer(
             message,
             self.strings["enabled"] if status else self.strings["disabled"]
         )
 
-    @loader.command(ru_doc="- вкл/выкл автореакции во всех чатах")
+    @loader.command(ru_doc="- вкл/выкл во всех ЛС")
     async def arallpm(self, message):
-        """Toggle auto-reactions in all private messages"""
+        """- toggle auto-reactions in all private messages"""
         self.all_pm = not self.all_pm
 
         if self.all_pm:
@@ -78,7 +78,7 @@ class AutoReactMod(loader.Module):
             self.strings["all_pm_enabled"] if self.all_pm else self.strings["all_pm_disabled"]
         )
 
-    @loader.command(ru_doc="Установить реакцию (обычный эмодзи или ID для Premium)")
+    @loader.command(ru_doc="<эмодзи или ID> - установить реакцию")
     async def setr(self, message):
         args = utils.get_args_raw(message)
         if not args:
