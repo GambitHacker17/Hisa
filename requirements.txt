@@ -17,5 +17,6 @@ babel==2.9.1
 magic-filter==1.0.9
 pysocks==1.7.1
 pyrogram
+legacy-cgi==2.6.4
 
 # Python 3.8+
