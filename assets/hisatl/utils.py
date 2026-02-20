@@ -1,7 +1,5 @@
-""""""
 import base64 
 import binascii 
-import imghdr 
 import inspect 
 import io 
 import itertools 
@@ -27,6 +25,11 @@ try :
     import hachoir .parser 
 except ImportError :
     hachoir =None 
+
+try:
+    from PIL import Image
+except ImportError:
+    Image = None
 
 mimetypes .add_type ('image/png','.png')
 mimetypes .add_type ('image/jpeg','.jpeg')
@@ -61,7 +64,7 @@ r'^[a-z](?:(?!__)\w){1,30}[a-z\d]$',
 re .IGNORECASE 
 )
 
-_FileInfo =namedtuple ('FileInfo','dc_id location size')
+_FileInfo =namedtuple ('_FileInfo','dc_id location size')
 
 _log =logging .getLogger (__name__ )
 
@@ -716,11 +719,24 @@ def _get_extension (file ):
     elif isinstance (file ,pathlib .Path ):
         return file .suffix 
     elif isinstance (file ,bytes ):
-        kind =imghdr .what (io .BytesIO (file ))
-        return ('.'+kind )if kind else ''
-    elif isinstance (file ,io .IOBase )and not isinstance (file ,io .TextIOBase )and file .seekable ():
-        kind =imghdr .what (file )
-        return ('.'+kind )if kind is not None else ''
+        if Image:
+            try:
+                with io .BytesIO (file ) as buf:
+                    kind = Image .open (buf) .format
+                return ('.' + kind .lower ()) if kind else ''
+            except Exception:
+                return ''
+        else:
+            return ''
+    elif isinstance (file ,io .IOBase ) and not isinstance (file ,io .TextIOBase ) and file .seekable ():
+        if Image:
+            try:
+                kind = Image .open (file) .format
+                return ('.' + kind .lower ()) if kind else ''
+            except Exception:
+                return ''
+        else:
+            return ''
     elif getattr (file ,'name',None ):
 
         return _get_extension (file .name )
