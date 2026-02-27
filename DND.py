@@ -72,7 +72,7 @@ class DND(loader.Module):
         "banned": (
             " <b>Hello •ᴗ•</b>\n<b>Unit «DND»<b> – <b>guardian</b> of this"
             " account.\nYou <b>not approved</b>!"
-            " \n<b>I need to ban you in terms of security.</b>" 
+            " \n<b>I need to ban you in terms of security.</b>\n\nPowered by <b>Hisa Userbot</b>" 
         ),
         "banned_log": (
             "👮 <b>I banned {}.</b>\n\n<b>{} Contact</b>\n<b>{} Started by"
@@ -179,7 +179,7 @@ class DND(loader.Module):
         "banned": (
             " <b>Привет •ᴗ•</b>\n<b>Юнит «DND»<b> – <b>защитник</b> этого"
             " аккаунта.\nВы <b>не подтверждены!</b>"
-            " \n<b>Я должен заблокировать Вас из соображений безопасности.</b>"
+            " \n<b>Я должен заблокировать Вас из соображений безопасности.</b>\n\nPowered by <b>Hisa Userbot</b>"
         ),
         "banned_log": (
             "👮 <b>Я заблокировал {}.</b>\n\n<b>{} Контакт</b>\n<b>{} Начатый"
